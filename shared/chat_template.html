@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ການສົນທະນາທີ່ຖືກແບ່ງປັນ - Lao Chat</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+        
+        @font-face {
+            font-family: 'Phetsarath OT';
+            src: url('../../front/Phetsarath OT.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        :root {
+            --primary-color: #10a37f;
+            --background-color: #ffffff;
+            --text-color: #0d0d0d;
+            --text-secondary: #676767;
+            --border-color: #e5e5e5;
+            --user-message-bg: #10a37f;
+            --bot-message-bg: #f7f7f8;
+            --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --radius-md: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Phetsarath OT', 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-light);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .message.user .icon {
+            background: var(--user-message-bg);
+            color: white;
+        }
+
+        .message.assistant .icon {
+            background: var(--bot-message-bg);
+            color: var(--text-color);
+        }
+
+        .message .content {
+            background: var(--bot-message-bg);
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .message.user .content {
+            background: var(--user-message-bg);
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗨️ ການສົນທະນາທີ່ຖືກແບ່ງປັນ</h1>
+            <p>ຖືກແບ່ງປັນຈາກ Lao Chat</p>
+        </div>
+
+        <div id="chat-content">
+            <div class="loading">
+                <p>📡 Đang tải cuộc trò chuyện...</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>
+                ສ້າງໂດຍ <a href="../../">Lao Chat</a> - 
+                ເຄື່ອງມື AI ສໍາລັບການສົນທະນາພາສາລາວ
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Redirect to the main shared page handler
+        window.location.href = '../index.html' + window.location.pathname.split('/shared')[1];
+    </script>
+</body>
+</html>
