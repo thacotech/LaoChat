@@ -1,0 +1,4800 @@
+<!DOCTYPE html>
+<html lang="lo">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lao Chat</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+      @font-face {
+        font-family: 'Phetsarath OT';
+        src: url('front/Phetsarath OT.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        --primary-color: #10a37f;
+        --primary-hover: #0d8a6b;
+        --secondary-color: #f7f7f8;
+        --background-color: #ffffff;
+        --sidebar-bg: #171717;
+        --sidebar-hover: #2a2a2a;
+        --text-color: #0d0d0d;
+        --text-secondary: #676767;
+        --light-text-color: #ececec;
+        --border-color: #e5e5e5;
+        --accent-color: #10a37f;
+        --user-message-bg: #10a37f;
+        --bot-message-bg: #f7f7f8;
+        --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.15);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --success-color: #22c55e;
+        --warning-color: #f59e0b;
+        --error-color: #ef4444;
+        --info-color: #3b82f6;
+      }
+
+      /* Dark Theme */
+      body.dark-theme {
+        --primary-color: #1a9988;
+        --primary-hover: #16876f;
+        --bg-primary: #0f1419;
+        --bg-secondary: #1a1f29;
+        --bg-tertiary: #252b36;
+        --text-primary: #e6e6e6;
+        --text-secondary: #b3b3b3;
+        --text-muted: #888888;
+        --border-color: #374151;
+        --hover-color: #374151;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --error-color: #f87171;
+        --info-color: #60a5fa;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Phetsarath OT", "Noto Sans Lao", "Times New Roman", Times, serif;
+      }
+
+      /* Typography Scale */
+      .text-xs {
+        font-size: 0.75rem;
+        line-height: 1rem;
+      }
+      .text-sm {
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+      }
+      .text-base {
+        font-size: 1rem;
+        line-height: 1.5rem;
+      }
+      .text-lg {
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+      }
+      .text-xl {
+        font-size: 1.25rem;
+        line-height: 1.75rem;
+      }
+      .text-2xl {
+        font-size: 1.5rem;
+        line-height: 2rem;
+      }
+
+      .font-medium {
+        font-weight: 500;
+      }
+      .font-semibold {
+        font-weight: 600;
+      }
+      .font-bold {
+        font-weight: 700;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: var(--background-color);
+        transition: background-color 0.3s;
+      }
+
+      .container {
+        display: flex;
+        width: 100vw;
+        height: 100vh;
+        max-width: none;
+        background-color: var(--background-color);
+        border-radius: 0;
+        overflow: hidden;
+        box-shadow: none;
+        position: relative;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 260px;
+        background-color: var(--sidebar-bg);
+        color: var(--light-text-color);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-right: 1px solid var(--border-color);
+      }
+
+      .sidebar-header h2 {
+        font-size: 1.25rem;
+        margin-bottom: 20px;
+        text-align: left;
+        font-weight: 600;
+        color: var(--light-text-color);
+        padding: 8px 12px;
+      }
+
+      .new-chat-btn {
+        width: 100%;
+        padding: 12px 16px;
+        background-color: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--light-text-color);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 20px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .new-chat-btn:hover {
+        background-color: var(--sidebar-hover);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+      }
+
+      .chat-history {
+        flex-grow: 1;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--hover-color) transparent;
+      }
+
+      .chat-history p {
+        font-size: 0.8rem;
+        color: #a0a0a0;
+        margin: 15px 0 5px;
+      }
+
+      .chat-history ul {
+        list-style: none;
+      }
+
+      .chat-history li {
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.875rem;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 2px;
+        position: relative;
+      }
+
+      .chat-history li:hover {
+        background-color: var(--sidebar-hover);
+        transform: translateX(2px);
+      }
+
+      .chat-history li.active {
+        background-color: var(--sidebar-hover);
+        border-left: 3px solid var(--primary-color);
+        padding-left: 9px;
+      }
+
+      .sidebar-section {
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .sidebar-section-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+        padding: 0 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .sidebar-footer {
+        padding-top: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: auto;
+      }
+
+
+
+      .sidebar-btn {
+        width: 100%;
+        padding: 12px 15px;
+        background-color: transparent;
+        border: none;
+        color: var(--light-text-color);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.9rem;
+        border-radius: var(--radius-sm);
+        transition: all 0.2s ease;
+        margin-bottom: 8px;
+      }
+
+      .sidebar-btn:hover {
+        background-color: var(--sidebar-hover);
+        transform: translateX(2px);
+      }
+
+
+
+      /* Chat Area */
+      .chat-area {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        background-color: #ffffff;
+      }
+
+      .chat-header {
+        padding: 15px 25px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 500;
+        min-height: 65px;
+        background: var(--background-color);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+
+      .header-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .header-btn {
+        width: 40px;
+        height: 40px;
+        border: none;
+        background: transparent;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+      }
+
+      .header-btn:hover {
+        background: var(--secondary-color);
+        color: var(--text-color);
+      }
+
+      /* Connection Status */
+      .connection-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .connection-status.online {
+        background: rgba(34, 197, 94, 0.1);
+        color: var(--success-color);
+      }
+
+      .connection-status.offline {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error-color);
+      }
+
+      .connection-status.connecting {
+        background: rgba(251, 146, 60, 0.1);
+        color: var(--warning-color);
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+
+      .user-icon-header {
+        font-size: 2rem;
+      }
+
+      .chat-container {
+        flex-grow: 1;
+        padding: 25px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-color) transparent;
+        scroll-behavior: smooth;
+      }
+
+      .chat-container::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .chat-container::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .chat-container::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 3px;
+      }
+
+      .chat-container::-webkit-scrollbar-thumb:hover {
+        background: var(--text-secondary);
+      }
+
+      .message {
+        display: flex;
+        gap: 15px;
+        max-width: 80%; /* Slightly smaller max-width */
+        align-items: flex-start;
+      }
+
+      .message.user {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+      }
+
+      .message .icon {
+        width: 40px; /* Larger icon */
+        height: 40px;
+        font-size: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background-color: var(--secondary-color);
+      }
+
+      .message.user .icon {
+        background-color: var(--accent-color);
+        color: var(--light-text-color);
+      }
+
+      .message {
+        position: relative;
+        transition: all 0.2s ease;
+      }
+
+      .message:hover .message-actions {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .message .text {
+        padding: 16px 20px;
+        border-radius: var(--radius-lg);
+        line-height: 1.6;
+        font-size: 0.95rem;
+        position: relative;
+        box-shadow: var(--shadow-light);
+        transition: all 0.2s ease;
+      }
+
+      .message.user .text {
+        background-color: var(--user-message-bg);
+        color: white;
+        border-bottom-right-radius: 6px;
+      }
+
+      .message.bot .text {
+        background-color: var(--bot-message-bg);
+        color: var(--text-color);
+        border-bottom-left-radius: 6px;
+        border: 1px solid var(--border-color);
+      }
+
+      /* Message Actions */
+      .message-actions {
+        position: absolute;
+        top: -16px;
+        right: 12px;
+        background: var(--background-color);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        box-shadow: var(--shadow-medium);
+        padding: 4px;
+        display: flex;
+        gap: 2px;
+        opacity: 0;
+        transform: translateY(4px);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 10;
+      }
+
+      .message.user .message-actions {
+        right: auto;
+        left: 12px;
+      }
+
+      .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+      }
+
+      .action-btn:hover {
+        background: var(--secondary-color);
+        color: var(--text-color);
+        transform: scale(1.1);
+      }
+
+      .action-btn.active {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      /* Message Meta */
+      .message-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+      }
+
+      .message.user .message-meta {
+        justify-content: flex-end;
+      }
+
+      .message-timestamp {
+        opacity: 0.7;
+      }
+
+      .message-status {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      /* Reactions */
+      .message-reactions {
+        display: flex;
+        gap: 4px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+      }
+
+      .reaction {
+        background: var(--secondary-color);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 2px 8px;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .reaction:hover {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+      }
+
+      .reaction.active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+      }
+
+      /* Threaded Replies */
+      .thread-container {
+        margin-left: 60px;
+        margin-top: 12px;
+        border-left: 2px solid var(--border-color);
+        padding-left: 16px;
+        position: relative;
+      }
+
+      .thread-toggle {
+        background: var(--secondary-color);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 12px;
+        transition: all 0.2s ease;
+        color: var(--text-secondary);
+      }
+
+      .thread-toggle:hover {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+      }
+
+      .thread-toggle.expanded {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+      }
+
+      .thread-messages {
+        display: none;
+        gap: 12px;
+        flex-direction: column;
+      }
+
+      .thread-messages.expanded {
+        display: flex;
+      }
+
+      .thread-message {
+        background: var(--secondary-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 12px;
+        font-size: 0.9rem;
+        position: relative;
+      }
+
+      .thread-message.user {
+        background: rgba(16, 163, 127, 0.1);
+        border-color: var(--primary-color);
+        margin-left: 20px;
+      }
+
+      .thread-message.bot {
+        background: var(--bot-message-bg);
+        margin-right: 20px;
+      }
+
+      .thread-input {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .thread-input input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        font-size: 0.9rem;
+        background: var(--background-color);
+        color: var(--text-color);
+      }
+
+      .thread-input button {
+        padding: 8px 12px;
+        background: var(--primary-color);
+        border: none;
+        border-radius: var(--radius-sm);
+        color: white;
+        cursor: pointer;
+        font-size: 0.8rem;
+      }
+
+      /* Voice Input */
+      .voice-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .voice-btn {
+        width: 44px;
+        height: 44px;
+        border: none;
+        background: var(--secondary-color);
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+      }
+
+      .voice-btn:hover {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      .voice-btn.recording {
+        background: var(--error-color);
+        color: white;
+        animation: pulse 1s infinite;
+      }
+
+      .voice-btn.processing {
+        background: var(--warning-color);
+        color: white;
+      }
+
+      /* File Upload */
+      .file-upload {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+      }
+
+      .file-upload input[type=file] {
+        position: absolute;
+        left: -9999px;
+      }
+
+      .file-preview {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+      }
+
+      .file-item {
+        background: var(--secondary-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        max-width: 200px;
+      }
+
+      .file-item .remove-file {
+        cursor: pointer;
+        color: var(--error-color);
+        font-weight: bold;
+      }
+
+      /* Message Templates */
+      .templates-panel {
+        position: absolute;
+        bottom: 100%;
+        left: 0;
+        right: 0;
+        background: var(--background-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-medium);
+        padding: 16px;
+        margin-bottom: 8px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.2s ease;
+        z-index: 100;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .templates-panel.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+
+      .template-item {
+        padding: 12px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: background 0.2s ease;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .template-item:last-child {
+        border-bottom: none;
+      }
+
+      .template-item:hover {
+        background: var(--secondary-color);
+      }
+
+      .template-title {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 4px;
+      }
+
+      .template-preview {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        line-height: 1.4;
+      }
+
+      .copy-btn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        opacity: 0;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 6px 8px;
+        backdrop-filter: blur(4px);
+      }
+
+      .message.bot:hover .copy-btn {
+        opacity: 1;
+      }
+
+      .copy-btn:hover {
+        color: var(--text-color);
+        background: white;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-light);
+      }
+
+      .message-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .message-actions button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #888;
+      }
+
+      /* Chat Input Area */
+      .chat-input-area {
+        padding: 20px 25px;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #fff;
+      }
+
+      .suggestions {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+
+      .suggestions button {
+        padding: 8px 15px;
+        background-color: #fff;
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+
+      .suggestions button:hover {
+        background-color: #f0f0f0;
+      }
+
+      .regenerate-btn {
+        margin-bottom: 15px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #555;
+      }
+
+      .chat-form {
+        display: flex;
+        width: 100%;
+        max-width: 768px;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 4px;
+        background-color: #fff;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--shadow-light);
+      }
+
+      .chat-form:focus-within {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+      }
+
+      #user-input {
+        flex-grow: 1;
+        border: none;
+        padding: 14px 16px;
+        font-size: 1rem;
+        outline: none;
+        background: transparent;
+        resize: none;
+        min-height: 24px;
+        max-height: 120px;
+        line-height: 1.5;
+      }
+
+      .chat-form button {
+        background: var(--primary-color);
+        border: none;
+        cursor: pointer;
+        padding: 10px;
+        color: #fff;
+        border-radius: var(--radius-sm);
+        width: 44px;
+        height: 44px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-shrink: 0;
+      }
+
+      .chat-form button:hover {
+        background-color: var(--primary-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-medium);
+      }
+
+      .chat-form button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .menu-btn {
+        display: none; /* Ẩน nút menu trên màn hình lớn */
+        background: none;
+        border: none;
+        color: var(--text-color);
+        cursor: pointer;
+        font-size: 1.5rem;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          width: 100vw;
+          height: 100vh;
+          border-radius: 0;
+          position: fixed;
+          top: 0;
+          left: 0;
+          display: grid;
+          grid-template-rows: auto 1fr auto;
+          grid-template-areas: 
+            "header"
+            "content" 
+            "input";
+        }
+
+        .sidebar {
+          position: fixed;
+          left: -260px;
+          top: 0;
+          height: 100%;
+          z-index: 1001;
+          transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: var(--shadow-medium);
+        }
+
+        .sidebar.show-sidebar {
+          left: 0;
+          box-shadow: 0 0 40px rgba(0,0,0,0.5);
+        }
+
+        .sidebar-overlay {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.4);
+          z-index: 1000;
+        }
+
+        .sidebar-overlay.active {
+          display: block;
+        }
+
+        .chat-area {
+          width: 100%;
+          height: 100vh;
+          display: grid;
+          grid-template-rows: auto 1fr auto;
+          grid-template-areas: 
+            "header"
+            "content" 
+            "input";
+        }
+
+        .menu-btn {
+          display: block;
+        }
+
+        .chat-header {
+          grid-area: header;
+          gap: 10px;
+          padding: 10px 15px;
+          min-height: 60px;
+          flex-shrink: 0;
+        }
+        
+        .header-btn {
+            width: 36px;
+            height: 36px;
+        }
+
+        .chat-container {
+          grid-area: content;
+          padding: 12px;
+          gap: 15px;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          min-height: 0; /* Important for grid */
+        }
+
+        .chat-input-area {
+          grid-area: input;
+          padding: 10px 15px;
+          background: #fff;
+          border-top: 1px solid var(--border-color);
+          z-index: 100;
+          box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .welcome-screen {
+          padding: 20px;
+          height: auto;
+          min-height: auto;
+        }
+
+        .welcome-title {
+          font-size: 1.5rem;
+        }
+
+        .suggestion-cards {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .message {
+          max-width: 90%;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+        }
+
+        .message .icon {
+            width: 32px;
+            height: 32px;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .message .text {
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+
+        .message-text {
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+          white-space: pre-wrap;
+        }
+
+        .chat-form {
+            padding: 2px;
+            max-width: 100%;
+        }
+
+        #user-input {
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            max-height: 100px;
+        }
+
+        .chat-form button {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+        }
+
+        .modal-content {
+            width: 95%;
+            padding: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Đảm bảo body không scroll trên mobile */
+        body {
+          overflow: hidden;
+          position: fixed;
+          width: 100%;
+          height: 100%;
+        }
+
+        /* Đảm bảo grid layout hoạt động đúng */
+        html, body {
+          height: 100%;
+          margin: 0;
+          padding: 0;
+        }
+
+        /* Fix cho typing indicator */
+        .typing-indicator {
+          margin-bottom: 10px;
+        }
+
+        /* Cải thiện scroll behavior */
+        .chat-container::-webkit-scrollbar {
+          width: 3px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+          background: rgba(0,0,0,0.3);
+          border-radius: 3px;
+        }
+      }
+
+      /* Modal */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        padding: 30px;
+        border: none;
+        width: 90%;
+        max-width: 450px;
+        text-align: center;
+        border-radius: 15px;
+        position: relative;
+        animation: fadeIn 0.3s;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .close-btn {
+        color: #aaa;
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+
+      .close-btn:hover {
+        color: #333;
+      }
+
+      .modal-qr-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .modal-qr-container img {
+        width: 48%;
+        height: auto;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+      }
+
+      .modal-content p {
+        font-size: 1.1rem;
+        color: var(--text-color);
+      }
+
+      .about-me-modal-content {
+        text-align: left;
+      }
+
+      .about-me-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .about-me-header img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--primary-color);
+        margin-top: 15px;
+      }
+
+      .about-me-header h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .about-me-body p {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 15px;
+      }
+
+      .about-me-body a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .about-me-body a:hover {
+        text-decoration: underline;
+      }
+
+      /* Welcome Screen */
+      .welcome-screen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        text-align: center;
+        padding: 40px;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .welcome-icon {
+        font-size: 4rem;
+        color: var(--primary-color);
+        margin-bottom: 24px;
+        animation: float 3s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      .welcome-title {
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 12px;
+      }
+
+      .welcome-subtitle {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        margin-bottom: 32px;
+        line-height: 1.6;
+      }
+
+      .suggestion-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        width: 100%;
+        max-width: 500px;
+        margin-bottom: 32px;
+      }
+
+      .suggestion-card {
+        background: var(--bot-message-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: left;
+      }
+
+      .suggestion-card:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+      }
+
+      .suggestion-card h4 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 8px;
+      }
+
+      .suggestion-card p {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        line-height: 1.4;
+      }
+
+      /* Typing indicator */
+      .typing-dots {
+        display: inline-flex;
+        gap: 4px;
+        align-items: center;
+      }
+
+      .typing-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--text-secondary);
+        animation: typing 1.4s infinite ease-in-out;
+      }
+
+      .typing-dot:nth-child(1) {
+        animation-delay: -0.32s;
+      }
+      .typing-dot:nth-child(2) {
+        animation-delay: -0.16s;
+      }
+
+      @keyframes typing {
+        0%,
+        80%,
+        100% {
+          transform: scale(0.8);
+          opacity: 0.5;
+        }
+        40% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* Search Modal */
+      .search-modal-content {
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .search-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .search-header h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-color);
+      }
+
+      .search-input-container {
+        display: flex;
+        padding: 20px 24px;
+        gap: 12px;
+      }
+
+      #search-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        background: var(--background-color);
+        color: var(--text-color);
+        transition: border-color 0.2s ease;
+      }
+
+      #search-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+      }
+
+      #search-submit {
+        padding: 12px;
+        background: var(--primary-color);
+        border: none;
+        border-radius: var(--radius-md);
+        color: white;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+
+      #search-submit:hover {
+        background: var(--primary-hover);
+      }
+
+      .search-filters {
+        display: flex;
+        gap: 8px;
+        padding: 0 24px 20px;
+      }
+
+      .filter-btn {
+        padding: 8px 16px;
+        border: 1px solid var(--border-color);
+        background: transparent;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--text-secondary);
+      }
+
+      .filter-btn.active {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+      }
+
+      .filter-btn:hover:not(.active) {
+        background: var(--secondary-color);
+        color: var(--text-color);
+      }
+
+      .search-results {
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 0 24px 24px;
+      }
+
+      .search-placeholder {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--text-secondary);
+      }
+
+      .search-placeholder .material-symbols-outlined {
+        font-size: 3rem;
+        margin-bottom: 12px;
+        opacity: 0.5;
+      }
+
+      .search-result-item {
+        padding: 16px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .search-result-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-light);
+      }
+
+      .search-result-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+      }
+
+      .search-result-text {
+        color: var(--text-color);
+        line-height: 1.5;
+      }
+
+      .search-highlight {
+        background: yellow;
+        color: black;
+        padding: 2px 4px;
+        border-radius: 3px;
+      }
+
+      /* Share Modal */
+      .share-modal-content {
+        max-width: 500px;
+        width: 90%;
+        padding: 0;
+      }
+
+      .share-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .share-header h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-color);
+      }
+
+      .share-options {
+        padding: 24px;
+      }
+
+      .share-option {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        margin-bottom: 16px;
+        transition: all 0.2s ease;
+      }
+
+      .share-option:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-light);
+      }
+
+      .share-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--secondary-color);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+        font-size: 1.5rem;
+      }
+
+      .share-content {
+        flex: 1;
+      }
+
+      .share-content h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 4px;
+      }
+
+      .share-content p {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+      }
+
+      .share-btn {
+        padding: 10px 20px;
+        background: var(--primary-color);
+        border: none;
+        border-radius: var(--radius-sm);
+        color: white;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.2s ease;
+      }
+
+      .share-btn:hover {
+        background: var(--primary-hover);
+      }
+
+      .export-buttons {
+        display: flex;
+        gap: 8px;
+      }
+
+      .export-btn {
+        padding: 8px 16px;
+        border: 1px solid var(--border-color);
+        background: transparent;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+      }
+
+      .export-btn:hover {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+      }
+
+      /* Animations */
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+
+      @keyframes fadeOut {
+        from {
+          opacity: 1;
+          transform: scale(1);
+        }
+        to {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+      }
+
+      /* Toast notifications */
+      .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--primary-color);
+        color: white;
+        padding: 12px 20px;
+        border-radius: var(--radius-md);
+        z-index: 1000;
+        font-weight: 500;
+        box-shadow: var(--shadow-medium);
+      }
+
+      /* Loading states */
+      .loading {
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid transparent;
+        border-top: 2px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* Improved mobile responsiveness */
+      @media (max-width: 768px) {
+        .header-controls {
+          gap: 8px;
+        }
+
+        .connection-status {
+          display: none;
+        }
+
+        .message-actions {
+          position: static;
+          opacity: 1;
+          transform: none;
+          margin-top: 8px;
+          justify-content: center;
+          background: transparent;
+          border: none;
+          box-shadow: none;
+        }
+
+        .search-modal-content,
+        .share-modal-content {
+          width: 95%;
+          margin: 20px;
+        }
+
+        .toast {
+          right: 10px;
+          left: 10px;
+          top: 10px;
+        }
+      }
+
+      /* Community Templates */
+      .community-modal-content {
+        max-width: 800px;
+        width: 95%;
+        max-height: 90vh;
+        padding: 0;
+      }
+
+      .community-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+        gap: 20px;
+      }
+
+      .community-search {
+        position: relative;
+        flex: 1;
+        max-width: 300px;
+      }
+
+      .community-search input {
+        width: 100%;
+        padding: 8px 40px 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        font-size: 0.9rem;
+        background: var(--background-color);
+        color: var(--text-color);
+      }
+
+      .community-search input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+      }
+
+      .community-search .material-symbols-outlined {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        font-size: 1.2rem;
+        pointer-events: none;
+      }
+
+      .community-filters {
+        display: flex;
+        gap: 8px;
+        padding: 20px 24px 0;
+        flex-wrap: wrap;
+        max-height: 120px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-color) transparent;
+      }
+
+      .community-filters::-webkit-scrollbar {
+        height: 4px;
+      }
+
+      .community-filters::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .community-filters::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 2px;
+      }
+
+      .community-filter {
+        padding: 8px 16px;
+        border: 1px solid var(--border-color);
+        background: transparent;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--text-secondary);
+      }
+
+      .community-filter.active {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+      }
+
+      .community-filter:hover {
+        background: var(--secondary-color);
+        color: var(--text-color);
+      }
+
+      .community-templates {
+        padding: 20px 24px;
+        max-height: 500px;
+        overflow-y: auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+      }
+
+      .template-card {
+        background: var(--secondary-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .template-card:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+      }
+
+      .template-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+      }
+
+      .template-card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 4px;
+      }
+
+      .template-card-category {
+        background: var(--primary-color);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .template-card-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 12px;
+      }
+
+      .template-card-preview {
+        background: rgba(16, 163, 127, 0.1);
+        border-left: 3px solid var(--primary-color);
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        color: var(--text-color);
+        font-style: italic;
+        margin-bottom: 16px;
+        border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      }
+
+      .template-card-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+      }
+
+      .template-card-rating {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .template-card-usage {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      /* Analytics */
+      .analytics-modal-content {
+        max-width: 900px;
+        width: 95%;
+        max-height: 90vh;
+        padding: 0;
+      }
+
+      .analytics-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .analytics-content {
+        padding: 24px;
+        max-height: 600px;
+        overflow-y: auto;
+      }
+
+      .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+      }
+
+      .analytics-card {
+        background: var(--secondary-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .analytics-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--primary-color);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+      }
+
+      .analytics-info h4 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 4px;
+      }
+
+      .analytics-info p {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+      }
+
+      .analytics-chart {
+        background: var(--secondary-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 20px;
+      }
+
+      .analytics-chart h4 {
+        margin-bottom: 16px;
+        color: var(--text-color);
+      }
+
+      .chart-container {
+        height: 200px;
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 4px;
+        padding: 20px 0;
+      }
+
+      .chart-bar {
+        background: var(--primary-color);
+        border-radius: 4px 4px 0 0;
+        min-width: 20px;
+        transition: all 0.3s ease;
+        position: relative;
+      }
+
+      .chart-bar:hover {
+        background: var(--primary-hover);
+      }
+
+      .chart-bar::after {
+        content: attr(data-value);
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .chart-bar:hover::after {
+        opacity: 1;
+      }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@100..900&family=Phetsarath:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="sidebar-overlay"></div>
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2>Lao Chat</h2>
+        </div>
+        <button class="new-chat-btn">
+          <span class="material-symbols-outlined">add</span>
+          ສົນທະນາໃໝ່
+        </button>
+        <div class="chat-history"></div>
+
+
+
+        <div class="sidebar-footer">
+
+
+          <button id="buy-me-a-coffee-btn" class="sidebar-btn">
+            <span class="material-symbols-outlined">coffee</span>
+            <span>Buy Me a Coffee</span>
+          </button>
+          <button id="about-me-btn" class="sidebar-btn">
+            <span class="material-symbols-outlined">person</span>
+            <span>About me</span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="chat-area">
+        <header class="chat-header">
+          <button class="menu-btn">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+          <div class="chat-header-title" data-translate="chatTitle">
+            Lao Chat
+          </div>
+          <div class="header-controls">
+            <div class="connection-status" id="connection-status">
+              <span class="status-dot"></span>
+              <span class="status-text">ເຊື່ອມຕໍ່ແລ້ວ</span>
+            </div>
+            <button class="header-btn" id="search-btn">
+              <span class="material-symbols-outlined">search</span>
+            </button>
+            <button class="header-btn" id="share-btn">
+              <span class="material-symbols-outlined">share</span>
+            </button>
+          </div>
+        </header>
+
+        <div class="chat-container"></div>
+
+        <div class="chat-input-area">
+          <div class="templates-panel" id="templates-panel">
+            <div class="template-item" data-template="greeting">
+              <div class="template-title">ທັກທາຍ</div>
+              <div class="template-preview">
+                ສະບາຍດີ! ຂ້ອຍຕ້ອງການຄວາມຊ່ວຍເຫຼືອ...
+              </div>
+            </div>
+            <div class="template-item" data-template="question">
+              <div class="template-title">ຖາມຄໍາຖາມ</div>
+              <div class="template-preview">ຂ້ອຍມີຄໍາຖາມກ່ຽວກັບ...</div>
+            </div>
+            <div class="template-item" data-template="translate">
+              <div class="template-title">ແປພາສາ</div>
+              <div class="template-preview">ກະລຸນາແປຂໍ້ຄວາມນີ້ເປັນພາສາລາວ:</div>
+            </div>
+            <div class="template-item" data-template="explain">
+              <div class="template-title">ອະທິບາຍ</div>
+              <div class="template-preview">
+                ກະລຸນາອະທິບາຍໃຫ້ຂ້ອຍຟັງກ່ຽວກັບ...
+              </div>
+            </div>
+          </div>
+          <form id="chat-form" class="chat-form">
+            <input
+              type="text"
+              id="user-input"
+              data-translate-placeholder="typeYourMessage"
+              placeholder="ພິມຂໍ້ຄວາມຂອງທ່ານທີ່ນີ້..."
+              required
+            />
+            <button type="submit">
+              <span class="material-symbols-outlined">send</span>
+            </button>
+          </form>
+        </div>
+      </main>
+    </div>
+
+    <!-- Coffee Modal -->
+    <div id="coffee-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div class="modal-qr-container">
+          <img src="front/QR.jpg" alt="QR Code 1" />
+          <img src="front/QR1.jpg" alt="QR Code 2" />
+        </div>
+        <p data-translate="thankYouSupport">
+          If you find this tool helpful, please consider supporting me.
+        </p>
+      </div>
+    </div>
+
+    <!-- About Me Modal -->
+    <div id="about-me-modal" class="modal">
+      <div class="modal-content about-me-modal-content">
+        <span class="close-btn">&times;</span>
+        <div class="about-me-header">
+          <h3>About Me</h3>
+          <img src="front/Khamko_congua.jpg" alt="Khamko" />
+        </div>
+        <div class="about-me-body">
+          <p>
+            Hello, my name is Khamko. I am from Laos and currently studying
+            Information Technology at University of Science and Education - The
+            University of Danang. At the same time, I am working as a Developer
+            at a company in Da Nang, Viet Nam.
+          </p>
+          <p>
+            If you would like to get in touch, please feel free to contact me
+            via Facebook or Email.
+          </p>
+          <p>
+            Facebook:
+            <a
+              href="https://www.facebook.com/khamkoxys"
+              target="_blank"
+              rel="noopener noreferrer"
+              >khamko</a
+            ><br />
+            Email:
+            <a href="mailto:khamko@pascaliaasia.com"
+              >khamko@pascaliaasia.com</a
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div id="search-modal" class="modal">
+      <div class="modal-content search-modal-content">
+        <div class="search-header">
+          <h3>ຄົ້ນຫາໃນປະຫວັດການສົນທະນາ</h3>
+          <span class="close-btn" id="search-close">&times;</span>
+        </div>
+        <div class="search-input-container">
+          <input
+            type="text"
+            id="search-input"
+            placeholder="ພິມຄໍາທີ່ຕ້ອງການຄົ້ນຫາ..."
+          />
+          <button id="search-submit">
+            <span class="material-symbols-outlined">search</span>
+          </button>
+        </div>
+        <div class="search-filters">
+          <button class="filter-btn active" data-filter="all">ທັງໝົດ</button>
+          <button class="filter-btn" data-filter="user">ຂ້ອຍ</button>
+          <button class="filter-btn" data-filter="bot">AI</button>
+        </div>
+        <div class="search-results" id="search-results">
+          <div class="search-placeholder">
+            <span class="material-symbols-outlined">search</span>
+            <p>ພິມຄໍາທີ່ຕ້ອງການຄົ້ນຫາ</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal">
+      <div class="modal-content share-modal-content">
+        <div class="share-header">
+          <h3>ແບ່ງປັນການສົນທະນາ</h3>
+          <span class="close-btn" id="share-close">&times;</span>
+        </div>
+        <div class="share-options">
+          <div class="share-option">
+            <div class="share-icon">
+              <span class="material-symbols-outlined">link</span>
+            </div>
+            <div class="share-content">
+              <h4>ແບ່ງປັນລິ້ງ</h4>
+              <p>ສ້າງລິ້ງສາທາລະນະສໍາລັບການສົນທະນານີ້</p>
+            </div>
+            <button class="share-btn" id="create-share-link">ສ້າງລິ້ງ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const chatForm = document.getElementById("chat-form");
+        const userInput = document.getElementById("user-input");
+        const chatContainer = document.querySelector(".chat-container");
+        const buyMeACoffeeBtn = document.getElementById("buy-me-a-coffee-btn");
+        const coffeeModal = document.getElementById("coffee-modal");
+        const aboutMeBtn = document.getElementById("about-me-btn");
+        const aboutMeModal = document.getElementById("about-me-modal");
+        const closeBtn = document.querySelector(".close-btn");
+        const menuBtn = document.querySelector(".menu-btn");
+        const sidebar = document.querySelector(".sidebar");
+        const sidebarOverlay = document.querySelector(".sidebar-overlay");
+        const newChatBtn = document.querySelector(".new-chat-btn");
+        const chatHistoryContainer = document.querySelector(".chat-history");
+
+        // New UI elements
+
+        const searchBtn = document.getElementById("search-btn");
+        const shareBtn = document.getElementById("share-btn");
+        const searchModal = document.getElementById("search-modal");
+        const shareModal = document.getElementById("share-modal");
+        const connectionStatus = document.getElementById("connection-status");
+
+        // --- Modal Logic ---
+        function setupModal(btn, modal) {
+          const close = modal.querySelector(".close-btn");
+
+          btn.addEventListener("click", () => {
+            modal.style.display = "flex";
+          });
+
+          close.addEventListener("click", () => {
+            modal.style.display = "none";
+          });
+
+          window.addEventListener("click", (event) => {
+            if (event.target == modal) {
+              modal.style.display = "none";
+            }
+          });
+        }
+
+        setupModal(buyMeACoffeeBtn, coffeeModal);
+        setupModal(aboutMeBtn, aboutMeModal);
+
+        // State management
+
+        let connectionState = "online";
+        let isGenerating = false;
+        let isRecording = false;
+        let mediaRecorder = null;
+        let selectedFiles = [];
+        let messageTemplates = {
+          greeting: "ສະບາຍດີ! ຂ້ອຍຕ້ອງການຄວາມຊ່ວຍເຫຼືອ",
+          question: "ຂ້ອຍມີຄໍາຖາມກ່ຽວກັບ",
+          translate: "ກະລຸນາແປຂໍ້ຄວາມນີ້ເປັນພາສາລາວ:",
+          explain: "ກະລຸນາອະທິບາຍໃຫ້ຂ້ອຍຟັງກ່ຽວກັບ",
+        };
+
+        // Virtual Scrolling for Performance
+        class VirtualChatList {
+          constructor(container, itemHeight = 120) {
+            this.container = container;
+            this.itemHeight = itemHeight;
+            this.visibleStart = 0;
+            this.visibleEnd = 0;
+            this.scrollTop = 0;
+            this.totalHeight = 0;
+            this.messages = [];
+            this.renderedMessages = new Map();
+
+            this.setupScrollListener();
+          }
+
+          setupScrollListener() {
+            this.container.addEventListener("scroll", () => {
+              this.scrollTop = this.container.scrollTop;
+              this.updateVisibleRange();
+              this.renderVisibleMessages();
+            });
+          }
+
+          updateVisibleRange() {
+            const containerHeight = this.container.clientHeight;
+            this.visibleStart = Math.floor(this.scrollTop / this.itemHeight);
+            this.visibleEnd = Math.min(
+              this.visibleStart +
+                Math.ceil(containerHeight / this.itemHeight) +
+                2,
+              this.messages.length
+            );
+          }
+
+          addMessage(message) {
+            this.messages.push(message);
+            this.totalHeight = this.messages.length * this.itemHeight;
+            this.updateVisibleRange();
+            this.renderVisibleMessages();
+          }
+
+          renderVisibleMessages() {
+            // Clear container
+            this.container.innerHTML = "";
+
+            // Create spacer for scrolling
+            const spacer = document.createElement("div");
+            spacer.style.height = `${this.totalHeight}px`;
+            spacer.style.position = "relative";
+            this.container.appendChild(spacer);
+
+            // Render visible messages
+            for (let i = this.visibleStart; i < this.visibleEnd; i++) {
+              if (this.messages[i]) {
+                const messageEl = this.createMessageElement(
+                  this.messages[i],
+                  i
+                );
+                messageEl.style.position = "absolute";
+                messageEl.style.top = `${i * this.itemHeight}px`;
+                messageEl.style.width = "100%";
+                spacer.appendChild(messageEl);
+              }
+            }
+          }
+
+          createMessageElement(message, index) {
+            const messageEl = document.createElement("div");
+            messageEl.className = `message ${message.sender}`;
+            messageEl.innerHTML = `
+              <div class="icon">
+                <span class="material-symbols-outlined">
+                  ${message.sender === "user" ? "account_circle" : "smart_toy"}
+                </span>
+              </div>
+              <div class="text">
+                <div class="message-text">${message.text}</div>
+              </div>
+            `;
+            return messageEl;
+          }
+        }
+
+        // Initialize virtual scrolling for large chat histories
+        let virtualList = null;
+
+        // Service Worker Registration
+        if ("serviceWorker" in navigator && location.protocol !== "file:") {
+          window.addEventListener("load", () => {
+            navigator.serviceWorker
+              .register("./sw.js")
+              .then((registration) => {
+                console.log("SW registered: ", registration);
+              })
+              .catch((registrationError) => {
+                console.log("SW registration failed: ", registrationError);
+              });
+          });
+        }
+
+        let currentChatId = null;
+        let chatHistories = {}; // { "chatId1": [{sender: "user", message: "hi"}, ...], ... }
+        let currentTheme = localStorage.getItem('theme') || 'light'; // Theme system
+
+        // --- Language / i18n ---
+        const languageStrings = {
+          lo: {
+            chatTitle: "Lao Chat",
+            newChat: "ສົນທະນາໃໝ່",
+            language: "ພາສາ:",
+            thankYouSupport: "If you find this tool helpful, please consider supporting me.",
+            typeYourMessage: "ພິມຂໍ້ຄວາມຂອງທ່ານທີ່ນີ້...",
+            welcomeMessage:
+              "ສະບາຍດີ! ຂ້ອຍແມ່ນ AIVA, ຂ້ອຍສາມາດຊ່ວຍຫຍັງເຈົ້າໄດ້ແດ່?",
+            thinking: "ກຳລັງຄິດ...",
+            errorMessage: "ຂໍອະໄພ, ມີຂໍ້ຜິດພາດເກີດຂຶ້ນ:",
+            copied: "ສຳເນົາແລ້ວ!",
+          },
+          vi: {
+            chatTitle: "Lao Chat",
+            newChat: "Trò chuyện mới",
+            language: "Ngôn ngữ:",
+            thankYouSupport: "Cảm ơn sự ủng hộ của bạn!",
+            typeYourMessage: "Nhập tin nhắn của bạn ở đây...",
+            welcomeMessage:
+              "Xin chào! Tôi là AIVA, tôi có thể giúp gì cho bạn?",
+            thinking: "Đang suy nghĩ...",
+            errorMessage: "Xin lỗi, đã có lỗi xảy ra:",
+            copied: "Đã sao chép!",
+          },
+          en: {
+            chatTitle: "Lao Chat",
+            newChat: "New Chat",
+            buyMeACoffee: "Buy Me a Coffee",
+            language: "Language:",
+            thankYouSupport: "Thank you for your support!",
+            typeYourMessage: "Type your message here...",
+            welcomeMessage: "Hello! I'm AIVA, how can I help you?",
+            thinking: "Thinking...",
+            errorMessage: "Sorry, an error occurred:",
+            copied: "Copied!",
+          },
+        };
+
+        // Initialize Lao language as default
+        function initializeLaoLanguage() {
+          document.documentElement.lang = "lo";
+
+          document.querySelectorAll("[data-translate]").forEach((el) => {
+            const key = el.dataset.translate;
+            if (languageStrings.lo[key]) {
+              el.textContent = languageStrings.lo[key];
+            }
+          });
+
+          document
+            .querySelectorAll("[data-translate-placeholder]")
+            .forEach((el) => {
+              const key = el.dataset.translatePlaceholder;
+              if (languageStrings.lo[key]) {
+                el.placeholder = languageStrings.lo[key];
+              }
+            });
+        }
+
+        // Theme Management
+        function setTheme(theme) {
+          currentTheme = theme;
+          document.body.className = theme === 'dark' ? 'dark-theme' : '';
+          localStorage.setItem('theme', theme);
+        }
+
+        function toggleTheme() {
+          const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+          setTheme(newTheme);
+        }
+
+        // Connection Status Management
+        function updateConnectionStatus(status) {
+          connectionState = status;
+          const statusText = connectionStatus.querySelector(".status-text");
+
+          connectionStatus.className = `connection-status ${status}`;
+
+          switch (status) {
+            case "online":
+              statusText.textContent = "ເຊື່ອມຕໍ່ແລ້ວ";
+              break;
+            case "offline":
+              statusText.textContent = "ບໍ່ມີອິນເຕີເນັດ";
+              break;
+            case "connecting":
+              statusText.textContent = "ກຳລັງເຊື່ອມຕໍ່...";
+              break;
+          }
+        }
+
+        // Message Actions
+        function createMessageActions(messageElement, message, sender) {
+          const isBot = sender === "bot";
+          if (!isBot) return; // Only show actions for bot messages
+
+          const actionsHtml = `
+            <div class="message-actions">
+              <button class="action-btn" data-action="copy" title="ສຳເນົາ"><span class="material-symbols-outlined">content_copy</span></button>
+            </div>
+            <div class="message-meta">
+              <span class="message-timestamp">${formatTime(new Date())}</span>
+            </div>
+          `;
+
+          messageElement.insertAdjacentHTML("beforeend", actionsHtml);
+
+          // Add event listeners for actions
+          const actionBtns = messageElement.querySelectorAll(".action-btn");
+          actionBtns.forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              handleMessageAction(btn.dataset.action, messageElement, message);
+            });
+          });
+        }
+
+        function handleMessageAction(action, messageElement, message) {
+          switch (action) {
+            case "copy":
+              navigator.clipboard.writeText(message).then(() => {
+                showToast("ສຳເນົາແລ້ວ!");
+              });
+              break;
+            case "like":
+              toggleReaction(messageElement, "like");
+              break;
+            case "dislike":
+              toggleReaction(messageElement, "dislike");
+              break;
+            case "edit":
+              editMessage(messageElement, message);
+              break;
+            case "delete":
+              deleteMessage(messageElement);
+              break;
+            case "regenerate":
+              regenerateResponse(messageElement);
+              break;
+          }
+        }
+
+        function toggleReaction(messageElement, type) {
+          const actionBtn = messageElement.querySelector(
+            `[data-action="${type}"]`
+          );
+          actionBtn.classList.toggle("active");
+
+          // Add reaction to message
+          let reactionsContainer =
+            messageElement.querySelector(".message-reactions");
+          if (!reactionsContainer) {
+            reactionsContainer = document.createElement("div");
+            reactionsContainer.className = "message-reactions";
+            messageElement
+              .querySelector(".message-text")
+              .appendChild(reactionsContainer);
+          }
+
+          const emoji = type === "like" ? "👍" : "👎";
+          const existingReaction = reactionsContainer.querySelector(
+            `[data-reaction="${type}"]`
+          );
+
+          if (existingReaction) {
+            existingReaction.remove();
+          } else {
+            const reaction = document.createElement("span");
+            reaction.className = "reaction active";
+            reaction.dataset.reaction = type;
+            reaction.innerHTML = `${emoji} 1`;
+            reactionsContainer.appendChild(reaction);
+          }
+        }
+
+        function showToast(message) {
+          const toast = document.createElement("div");
+          toast.className = "toast";
+          toast.textContent = message;
+          toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+          `;
+
+          document.body.appendChild(toast);
+
+          setTimeout(() => {
+            toast.style.animation = "slideOut 0.3s ease";
+            setTimeout(() => toast.remove(), 300);
+          }, 2000);
+        }
+
+        function formatTime(date) {
+          return date.toLocaleTimeString("lo-LA", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        }
+
+        // Search functionality
+        function searchMessages(query, filter = "all") {
+          const results = [];
+          const searchQuery = query.toLowerCase();
+
+          Object.values(chatHistories).forEach((chatMessages) => {
+            chatMessages.forEach((msg, index) => {
+              if (filter !== "all" && msg.sender !== filter) return;
+
+              if (msg.message.toLowerCase().includes(searchQuery)) {
+                results.push({
+                  ...msg,
+                  index,
+                  chatId: Object.keys(chatHistories).find(
+                    (id) => chatHistories[id] === chatMessages
+                  ),
+                });
+              }
+            });
+          });
+
+          displaySearchResults(results, query);
+        }
+
+        function displaySearchResults(results, query) {
+          const resultsContainer = document.getElementById("search-results");
+
+          if (results.length === 0) {
+            resultsContainer.innerHTML = `
+              <div class="search-placeholder">
+                <span class="material-symbols-outlined">search_off</span>
+                <p>ບໍ່ພົບຜົນການຄົ້ນຫາ</p>
+              </div>
+            `;
+            return;
+          }
+
+          resultsContainer.innerHTML = results
+            .map((result) => {
+              const highlightedText = result.message.replace(
+                new RegExp(query, "gi"),
+                (match) => `<span class="search-highlight">${match}</span>`
+              );
+
+              return `
+              <div class="search-result-item" data-chat-id="${
+                result.chatId
+              }" data-message-index="${result.index}">
+                <div class="search-result-meta">
+                  <span>${result.sender === "user" ? "ຂ້ອຍ" : "AI"}</span>
+                  <span>${formatTime(new Date())}</span>
+                </div>
+                <div class="search-result-text">${highlightedText}</div>
+              </div>
+            `;
+            })
+            .join("");
+
+          // Add click handlers for search results
+          resultsContainer
+            .querySelectorAll(".search-result-item")
+            .forEach((item) => {
+              item.addEventListener("click", () => {
+                const chatId = item.dataset.chatId;
+                loadChat(chatId);
+                searchModal.style.display = "none";
+                sidebar.classList.remove("show-sidebar");
+              });
+            });
+        }
+
+        // --- Xử lý Lịch sử Chat ---
+
+        function loadChatHistories() {
+          const storedHistories = localStorage.getItem("chatHistories");
+          if (storedHistories) {
+            chatHistories = JSON.parse(storedHistories);
+          }
+          const storedChatId = localStorage.getItem("currentChatId");
+          currentChatId = storedChatId;
+
+          if (!currentChatId || !chatHistories[currentChatId]) {
+            createNewChat();
+          } else {
+            loadChat(currentChatId);
+          }
+          renderChatHistoryList();
+        }
+
+        function renderChatHistoryList() {
+          chatHistoryContainer.innerHTML = "<ul></ul>";
+          const ul = chatHistoryContainer.querySelector("ul");
+          Object.keys(chatHistories)
+            .reverse()
+            .forEach((id) => {
+              const firstUserMessage = chatHistories[id].find(
+                (m) => m.sender === "user"
+              );
+              const title =
+                firstUserMessage?.message.substring(0, 30) || "New Chat";
+              const li = document.createElement("li");
+              li.dataset.chatId = id;
+              li.innerHTML = `
+              <span class="material-symbols-outlined">chat_bubble</span>
+              <span>${title}</span>
+            `;
+              if (id === currentChatId) {
+                li.classList.add("active");
+              }
+              li.addEventListener("click", () => {
+                loadChat(id);
+                sidebar.classList.remove("show-sidebar"); // Đóng sidebar trên mobile
+              });
+              ul.appendChild(li);
+            });
+        }
+
+        function createNewChat() {
+          chatContainer.innerHTML = "";
+          const newChatId = `chat_${Date.now()}`;
+          currentChatId = newChatId;
+          chatHistories[currentChatId] = [];
+          localStorage.setItem("currentChatId", currentChatId);
+          const lang = "lo"; // Always use Lao
+          // addMessage(languageStrings[lang].welcomeMessage, "bot");
+          renderChatHistoryList();
+          // Clear welcome message if there is one
+          const welcomeMessage = document.querySelector(".welcome-placeholder");
+          if (welcomeMessage) welcomeMessage.remove();
+        }
+
+        function loadChat(chatId) {
+          currentChatId = chatId;
+          localStorage.setItem("currentChatId", currentChatId);
+          chatContainer.innerHTML = "";
+          const messages = chatHistories[chatId] || [];
+          if (messages.length === 0) {
+            const lang = "lo"; // Always use Lao
+            addWelcomePlaceholder(lang);
+          } else {
+            messages.forEach((msg) =>
+              addMessage(msg.message, msg.sender, false)
+            ); // false để không lưu lại
+          }
+          renderChatHistoryList();
+        }
+
+        function saveMessageToHistory(message, sender) {
+          if (!chatHistories[currentChatId]) {
+            chatHistories[currentChatId] = [];
+          }
+          chatHistories[currentChatId].push({ message, sender });
+          localStorage.setItem("chatHistories", JSON.stringify(chatHistories));
+          // Cập nhật tiêu đề nếu đây là tin nhắn đầuแรก của người dùng
+          if (
+            chatHistories[currentChatId].filter((m) => m.sender === "user")
+              .length === 1
+          ) {
+            renderChatHistoryList();
+          }
+        }
+
+        menuBtn.addEventListener("click", () => {
+          sidebar.classList.toggle("show-sidebar");
+          sidebarOverlay.classList.toggle("active");
+        });
+
+        // Đóng sidebar khi click bên ngoài
+        sidebarOverlay.addEventListener("click", () => {
+            sidebar.classList.remove("show-sidebar");
+            sidebarOverlay.classList.remove("active");
+        });
+
+        newChatBtn.addEventListener("click", () => {
+            createNewChat();
+            sidebar.classList.remove("show-sidebar");
+            sidebarOverlay.classList.remove("active");
+        });
+
+
+
+        // --- Search Modal ---
+        searchBtn.addEventListener("click", () => {
+          searchModal.style.display = "flex";
+          document.getElementById("search-input").focus();
+        });
+
+        document
+          .getElementById("search-close")
+          .addEventListener("click", () => {
+            searchModal.style.display = "none";
+          });
+
+        document
+          .getElementById("search-input")
+          .addEventListener("input", (e) => {
+            const query = e.target.value.trim();
+            if (query.length > 2) {
+              const activeFilter =
+                document.querySelector(".filter-btn.active").dataset.filter;
+              searchMessages(query, activeFilter);
+            }
+          });
+
+        document.querySelectorAll(".filter-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document
+              .querySelectorAll(".filter-btn")
+              .forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            const query = document.getElementById("search-input").value.trim();
+            if (query.length > 2) {
+              searchMessages(query, btn.dataset.filter);
+            }
+          });
+        });
+
+        // --- Share Modal ---
+        shareBtn.addEventListener("click", () => {
+          shareModal.style.display = "flex";
+        });
+
+        document.getElementById("share-close").addEventListener("click", () => {
+          shareModal.style.display = "none";
+        });
+
+        document
+          .getElementById("create-share-link")
+          .addEventListener("click", () => {
+            const shareUrl = `${window.location.origin}/shared/${currentChatId}`;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+              showToast("ລິ້ງຖືກສຳເນົາແລ້ວ!");
+            });
+          });
+
+
+
+        // --- Modal Management ---
+        buyMeACoffeeBtn.addEventListener("click", () => {
+          coffeeModal.style.display = "flex";
+        });
+
+        aboutMeBtn.addEventListener("click", () => {
+          aboutMeModal.style.display = "flex";
+        });
+
+        closeBtn.addEventListener("click", () => {
+          coffeeModal.style.display = "none";
+          aboutMeModal.style.display = "none";
+        });
+
+        window.addEventListener("click", (event) => {
+          if (event.target == coffeeModal) {
+            coffeeModal.style.display = "none";
+          }
+          if (event.target == searchModal) {
+            searchModal.style.display = "none";
+          }
+          if (event.target == shareModal) {
+            shareModal.style.display = "none";
+          }
+          if (event.target == aboutMeModal) {
+            aboutMeModal.style.display = "none";
+          }
+        });
+
+        // --- Advanced Features ---
+
+        // Templates Panel
+        const templatesPanel = document.getElementById("templates-panel");
+
+        // Templates
+        document.querySelectorAll(".template-item").forEach((item) => {
+          item.addEventListener("click", () => {
+            const template = messageTemplates[item.dataset.template];
+            userInput.value = template;
+            templatesPanel.classList.remove("show");
+            userInput.focus();
+          });
+        });
+
+
+
+        // Threaded Replies
+        function createThreadedReply(parentMessage, replyText) {
+          const parentElement = parentMessage.parentElement;
+          let threadContainer =
+            parentElement.querySelector(".thread-container");
+
+          if (!threadContainer) {
+            threadContainer = document.createElement("div");
+            threadContainer.className = "thread-container";
+            threadContainer.innerHTML = `
+              <div class="thread-toggle">
+                <span class="material-symbols-outlined">forum</span>
+                <span>1 ການຕອບກັບ</span>
+              </div>
+              <div class="thread-messages"></div>
+              <div class="thread-input">
+                <input type="text" placeholder="ຕອບກັບໃນກະທູ້...">
+                <button>ສົ່ງ</button>
+              </div>
+            `;
+            parentElement.appendChild(threadContainer);
+
+            // Add thread toggle functionality
+            const toggle = threadContainer.querySelector(".thread-toggle");
+            const messages = threadContainer.querySelector(".thread-messages");
+            const input = threadContainer.querySelector(".thread-input input");
+            const sendBtn = threadContainer.querySelector(
+              ".thread-input button"
+            );
+
+            toggle.addEventListener("click", () => {
+              toggle.classList.toggle("expanded");
+              messages.classList.toggle("expanded");
+            });
+
+            sendBtn.addEventListener("click", () => {
+              if (input.value.trim()) {
+                addThreadMessage(messages, input.value, "user");
+                input.value = "";
+                updateThreadCount(toggle);
+              }
+            });
+
+            input.addEventListener("keypress", (e) => {
+              if (e.key === "Enter") {
+                sendBtn.click();
+              }
+            });
+          }
+
+          const messages = threadContainer.querySelector(".thread-messages");
+          addThreadMessage(messages, replyText, "bot");
+          updateThreadCount(threadContainer.querySelector(".thread-toggle"));
+        }
+
+        function addThreadMessage(container, text, sender) {
+          const messageEl = document.createElement("div");
+          messageEl.className = `thread-message ${sender}`;
+          messageEl.innerHTML = `
+            <div class="thread-message-content">${text}</div>
+            <div class="thread-message-meta">
+              <span>${sender === "user" ? "ຂ້ອຍ" : "AI"}</span>
+              <span>${formatTime(new Date())}</span>
+            </div>
+          `;
+          container.appendChild(messageEl);
+        }
+
+        function updateThreadCount(toggle) {
+          const container = toggle.parentElement;
+          const messages = container.querySelectorAll(".thread-message");
+          toggle.querySelector(
+            "span:last-child"
+          ).textContent = `${messages.length} ການຕອບກັບ`;
+        }
+
+        // --- Connection Status ---
+        window.addEventListener("online", () =>
+          updateConnectionStatus("online")
+        );
+        window.addEventListener("offline", () =>
+          updateConnectionStatus("offline")
+        );
+
+        // Offline message queue
+        let offlineMessageQueue = JSON.parse(
+          localStorage.getItem("offlineMessages") || "[]"
+        );
+
+        function queueOfflineMessage(message) {
+          offlineMessageQueue.push({
+            message,
+            timestamp: Date.now(),
+            chatId: currentChatId,
+          });
+          localStorage.setItem(
+            "offlineMessages",
+            JSON.stringify(offlineMessageQueue)
+          );
+        }
+
+        function processOfflineQueue() {
+          if (offlineMessageQueue.length > 0 && connectionState === "online") {
+            offlineMessageQueue.forEach(async (item) => {
+              // Process queued messages
+              await sendMessage(item.message);
+            });
+            offlineMessageQueue = [];
+            localStorage.removeItem("offlineMessages");
+          }
+        }
+
+        // Auto-resize input
+        userInput.addEventListener("input", function () {
+          this.style.height = "auto";
+          const maxHeight = window.innerWidth <= 768 ? 100 : 120;
+          this.style.height = Math.min(this.scrollHeight, maxHeight) + "px";
+          
+          // Đảm bảo input area luôn hiển thị trên mobile
+          if (window.innerWidth <= 768) {
+            this.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        });
+
+        // Handle Enter key
+        userInput.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            chatForm.dispatchEvent(new Event("submit"));
+          }
+        });
+
+        // Mobile scroll optimization
+        function optimizeMobileScroll() {
+          if (window.innerWidth <= 768) {
+            // Prevent body scroll on mobile
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+            document.body.style.height = '100%';
+            
+            // Ensure chat container can scroll properly
+            const chatContainer = document.querySelector('.chat-container');
+            if (chatContainer) {
+              chatContainer.style.overflowY = 'auto';
+              chatContainer.style.webkitOverflowScrolling = 'touch';
+            }
+          }
+        }
+
+        // Call on load and resize
+        optimizeMobileScroll();
+        window.addEventListener('resize', optimizeMobileScroll);
+
+        // Fix viewport height on mobile browsers
+        function setViewportHeight() {
+          const vh = window.innerHeight * 0.01;
+          document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+
+        setViewportHeight();
+        window.addEventListener('resize', setViewportHeight);
+        window.addEventListener('orientationchange', setViewportHeight);
+
+        // --- Xử lý Chat ---
+        chatForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const userMessage = userInput.value.trim();
+          if (!userMessage) return;
+
+          addMessage(userMessage, "user");
+          userInput.value = "";
+          userInput.style.height = "auto";
+          addTypingIndicator();
+
+          // Update UI for generation state
+          isGenerating = true;
+          updateGenerationUI(true);
+
+          try {
+            // Create abort controller for stopping generation
+            abortController = new AbortController();
+            updateConnectionStatus("connecting");
+
+            // !!! THAY THẾ BẰNG API KEY CỦA BẠN !!!
+            const apiKey = "AIzaSyA1jCHfm-m-on0OmoK6dd2XckzPidpEYWw";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: userMessage }] }],
+              }),
+              signal: abortController.signal,
+            });
+
+            removeTypingIndicator();
+            updateConnectionStatus("online");
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              const lang = "lo"; // Always use Lao
+              throw new Error(
+                errorData.error.message || languageStrings[lang].errorMessage
+              );
+            }
+
+            const data = await response.json();
+            const botMessage = data.candidates[0].content.parts[0].text;
+            addMessage(botMessage, "bot");
+            saveMessageToHistory(botMessage, "bot"); // Lưu tin nhắn bot vào lịch sử
+          } catch (error) {
+            removeTypingIndicator();
+            updateConnectionStatus("online");
+
+            if (error.name === "AbortError") {
+              addMessage("ການສ້າງຄໍາຕອບຖືກຢຸດແລ້ວ", "bot");
+            } else {
+              console.error("Lỗi khi gọi API Gemini:", error);
+              const lang = "lo"; // Always use Lao
+              addMessage(
+                `${languageStrings[lang].errorMessage} ${error.message}`,
+                "bot"
+              );
+            }
+          } finally {
+            isGenerating = false;
+            updateGenerationUI(false);
+            abortController = null;
+          }
+        });
+
+        function addMessage(message, sender, saveToHistory = true) {
+          // Remove placeholder if it exists
+          const placeholder = document.querySelector(".welcome-placeholder");
+          if (placeholder) {
+            placeholder.remove();
+          }
+
+          const messageElement = document.createElement("div");
+          messageElement.classList.add("message", sender);
+
+          const icon = document.createElement("div");
+          icon.classList.add("icon");
+          const iconSpan = document.createElement("span");
+          iconSpan.classList.add("material-symbols-outlined");
+          iconSpan.textContent =
+            sender === "user" ? "account_circle" : "smart_toy";
+          icon.appendChild(iconSpan);
+
+          const textElement = document.createElement("div");
+          textElement.classList.add("text");
+
+          const formattedMessage = message
+            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold
+            .replace(/\*(.*?)\*/g, "<em>$1</em>") // Italics
+            .replace(/\n/g, "<br>"); // New lines
+          textElement.innerHTML = `<div class="message-text">${formattedMessage}</div>`;
+
+          messageElement.appendChild(icon);
+          messageElement.appendChild(textElement);
+
+          // Add message actions
+          createMessageActions(messageElement, message, sender);
+
+          chatContainer.appendChild(messageElement);
+          
+          // Scroll to bottom with smooth behavior
+          setTimeout(() => {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+          }, 100);
+
+          if (saveToHistory) {
+            saveMessageToHistory(message, sender);
+          }
+        }
+
+        function addTypingIndicator() {
+          const typingIndicator = document.createElement("div");
+          typingIndicator.classList.add("message", "bot", "typing-indicator");
+          typingIndicator.innerHTML = `
+            <div class="icon">
+                <span class="material-symbols-outlined">smart_toy</span>
+            </div>
+            <div class="text">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        `;
+          chatContainer.appendChild(typingIndicator);
+          
+          // Scroll to typing indicator
+          setTimeout(() => {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+          }, 50);
+        }
+
+        function removeTypingIndicator() {
+          const typingIndicator = document.querySelector(".typing-indicator");
+          if (typingIndicator) {
+            typingIndicator.remove();
+          }
+        }
+
+        function addWelcomePlaceholder(lang) {
+          const suggestions = {
+            lo: [
+              {
+                title: "ຖາມກ່ຽວກັບພາສາລາວ",
+                desc: "ຮຽນຮູ້ກ່ຽວກັບວັດທະນະທໍາ ແລະ ປະເພນີລາວ",
+              },
+              { title: "ຊ່ວຍແປພາສາ", desc: "ແປຂໍ້ຄວາມຈາກພາສາອື່ນເປັນພາສາລາວ" },
+              {
+                title: "ຄໍາແນະນໍາການຮຽນ",
+                desc: "ຮຽນຮູ້ສິ່ງໃໝ່ໆ ແລະ ພັດທະນາທັກສະ",
+              },
+              { title: "ສົນທະນາທົ່ວໄປ", desc: "ສົນທະນາກ່ຽວກັບຫົວຂໍ້ທີ່ສົນໃຈ" },
+            ],
+            vi: [
+              {
+                title: "Hỏi về văn hóa Lào",
+                desc: "Tìm hiểu về truyền thống và văn hóa Lào",
+              },
+              {
+                title: "Hỗ trợ dịch thuật",
+                desc: "Dịch văn bản sang tiếng Lào hoặc ngược lại",
+              },
+              {
+                title: "Tư vấn học tập",
+                desc: "Học hỏi kiến thức mới và phát triển kỹ năng",
+              },
+              {
+                title: "Trò chuyện tự do",
+                desc: "Thảo luận về các chủ đề bạn quan tâm",
+              },
+            ],
+            en: [
+              {
+                title: "Learn about Lao culture",
+                desc: "Discover traditions and customs of Laos",
+              },
+              {
+                title: "Translation help",
+                desc: "Translate text to/from Lao language",
+              },
+              {
+                title: "Study guidance",
+                desc: "Learn new things and develop skills",
+              },
+              {
+                title: "General chat",
+                desc: "Discuss topics you're interested in",
+              },
+            ],
+          };
+
+          chatContainer.innerHTML = `
+                <div class="welcome-screen">
+                    <div class="welcome-icon">
+                        <span class="material-symbols-outlined">smart_toy</span>
+                    </div>
+                    <h1 class="welcome-title">${
+                      languageStrings[lang].welcomeMessage
+                    }</h1>
+                    <p class="welcome-subtitle">ເລືອກຫົວຂໍ້ຂ້າງລຸ່ມນີ້ ຫຼື ພິມຄໍາຖາມຂອງທ່ານ</p>
+                    <div class="suggestion-cards">
+                        ${suggestions[lang]
+                          .map(
+                            (suggestion) => `
+                            <div class="suggestion-card" onclick="handleSuggestionClick('${suggestion.title}')">
+                                <h4>${suggestion.title}</h4>
+                                <p>${suggestion.desc}</p>
+                            </div>
+                        `
+                          )
+                          .join("")}
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleSuggestionClick(suggestion) {
+          userInput.value = suggestion;
+          chatForm.dispatchEvent(new Event("submit"));
+        }
+
+        // Export functionality
+        function editMessage(messageElement, originalMessage) {
+          const textElement = messageElement.querySelector(".message-text");
+          const currentText = textElement.textContent;
+
+          const input = document.createElement("textarea");
+          input.value = currentText;
+          input.className = "edit-input";
+          input.style.cssText = `
+            width: 100%;
+            min-height: 60px;
+            padding: 12px;
+            border: 2px solid var(--primary-color);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: inherit;
+            background: var(--background-color);
+            color: var(--text-color);
+            resize: vertical;
+          `;
+
+          const saveBtn = document.createElement("button");
+          saveBtn.textContent = "ບັນທຶກ";
+          saveBtn.style.cssText = `
+            margin-top: 8px;
+            margin-right: 8px;
+            padding: 6px 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+          `;
+
+          const cancelBtn = document.createElement("button");
+          cancelBtn.textContent = "ຍົກເລີກ";
+          cancelBtn.style.cssText = `
+            margin-top: 8px;
+            padding: 6px 12px;
+            background: var(--secondary-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+          `;
+
+          textElement.innerHTML = "";
+          textElement.appendChild(input);
+          textElement.appendChild(saveBtn);
+          textElement.appendChild(cancelBtn);
+
+          input.focus();
+
+          saveBtn.addEventListener("click", () => {
+            const newText = input.value.trim();
+            if (newText) {
+              textElement.innerHTML = `<div class="message-text">${newText}</div>`;
+              // Update in chat history
+              updateMessageInHistory(originalMessage, newText);
+            }
+          });
+
+          cancelBtn.addEventListener("click", () => {
+            textElement.innerHTML = `<div class="message-text">${currentText}</div>`;
+          });
+        }
+
+        function deleteMessage(messageElement) {
+          if (confirm("ທ່ານຕ້ອງການລຶບຂໍ້ຄວາມນີ້ບໍ?")) {
+            messageElement.style.animation = "fadeOut 0.3s ease";
+            setTimeout(() => {
+              messageElement.remove();
+            }, 300);
+          }
+        }
+
+        function updateMessageInHistory(originalMessage, newMessage) {
+          if (chatHistories[currentChatId]) {
+            const messageIndex = chatHistories[currentChatId].findIndex(
+              (msg) => msg.message === originalMessage
+            );
+            if (messageIndex !== -1) {
+              chatHistories[currentChatId][messageIndex].message = newMessage;
+              localStorage.setItem(
+                "chatHistories",
+                JSON.stringify(chatHistories)
+              );
+            }
+          }
+        }
+
+        function updateGenerationUI(generating) {
+          const submitBtn = chatForm.querySelector('button[type="submit"]');
+          const submitIcon = submitBtn.querySelector(
+            ".material-symbols-outlined"
+          );
+
+          if (generating) {
+            submitIcon.textContent = "stop";
+            submitBtn.title = "ຢຸດການສ້າງ";
+            submitBtn.style.background = "var(--error-color)";
+          } else {
+            submitIcon.textContent = "send";
+            submitBtn.title = "ສົ່ງ";
+            submitBtn.style.background = "var(--primary-color)";
+          }
+        }
+
+        // Community Templates Data
+        const communityTemplates = [
+          // Learning Category
+          {
+            id: 1,
+            title: "ການຮຽນພາສາລາວ",
+            category: "learning",
+            description: "ແມ່ແບບສໍາລັບການຮຽນຮູ້ພາສາລາວຂັ້ນພື້ນຖານ",
+            content:
+              "ຂ້ອຍຕ້ອງການຮຽນພາສາລາວ. ກະລຸນາແນະນໍາວິທີການຮຽນທີ່ດີທີ່ສຸດ ແລະ ແຫຼ່ງຮຽນຮູ້ທີ່ເໝາະສົມ",
+            rating: 4.8,
+            usage: 125,
+            author: "ຄູສອນພາສາ",
+          },
+          {
+            id: 2,
+            title: "ອະທິບາຍແນວຄິດຊັບຊ້ອນ",
+            category: "learning",
+            description: "ຂໍໃຫ້ອະທິບາຍເລື່ອງຍາກໃຫ້ງ່າຍຂຶ້ນ",
+            content:
+              "ກະລຸນາອະທິບາຍແນວຄິດນີ້ໃຫ້ຂ້ອຍຟັງແບບງ່າຍໆ ຄືກັບອະທິບາຍໃຫ້ເດັກນ້ອຍຟັງ:",
+            rating: 4.7,
+            usage: 98,
+            author: "ຄູສອນ",
+          },
+          {
+            id: 3,
+            title: "ສ້າງແຜນການຮຽນ",
+            category: "learning",
+            description: "ສ້າງແຜນການຮຽນສະເພາະບຸກຄົນ",
+            content:
+              "ຊ່ວຍສ້າງແຜນການຮຽນ 30 ວັນສໍາລັບ [ຫົວຂໍ້] ໂດຍແບ່ງເປັນຂັ້ນຕອນທີ່ຊັດເຈນ",
+            rating: 4.9,
+            usage: 156,
+            author: "ນັກການສຶກສາ",
+          },
+
+          // Business Category
+          {
+            id: 4,
+            title: "ຈົດໝາຍທຸລະກິດ",
+            category: "business",
+            description: "ແມ່ແບບສໍາລັບການຂຽນຈົດໝາຍທຸລະກິດເປັນພາສາລາວ",
+            content:
+              "ຊ່ວຍຂຽນຈົດໝາຍທຸລະກິດເປັນພາສາລາວທີ່ສຸພາບແລະເປັນທາງການກ່ຽວກັບ [ຫົວຂໍ້]",
+            rating: 4.6,
+            usage: 89,
+            author: "ນັກທຸລະກິດ",
+          },
+          {
+            id: 5,
+            title: "ແຜນທຸລະກິດ",
+            category: "business",
+            description: "ສ້າງແຜນທຸລະກິດສໍາລັບ startup",
+            content:
+              "ຊ່ວຍສ້າງແຜນທຸລະກິດສໍາລັບ [ປະເພດທຸລະກິດ] ໃນປະເທດລາວ ລວມທັງການວິເຄາະຕະຫຼາດ ແລະ ຍຸດທະສາດ",
+            rating: 4.8,
+            usage: 134,
+            author: "ທີ່ປຶກສາທຸລະກິດ",
+          },
+          {
+            id: 6,
+            title: "ການນໍາສະເໜີ",
+            category: "business",
+            description: "ສ້າງເນື້ອຫາການນໍາສະເໜີທີ່ໜ້າສົນໃຈ",
+            content:
+              "ຊ່ວຍສ້າງໂຄງຮ່າງການນໍາສະເໜີ PowerPoint ກ່ຽວກັບ [ຫົວຂໍ້] ທີ່ໜ້າສົນໃຈແລະມີປະສິດທິພາບ",
+            rating: 4.5,
+            usage: 76,
+            author: "ຜູ້ຊ່ຽວຊານ",
+          },
+
+          // Creative Category
+          {
+            id: 7,
+            title: "ການຂຽນເລື່ອງສັ້ນ",
+            category: "creative",
+            description: "ແມ່ແບບສໍາລັບການຂຽນເລື່ອງສັ້ນເປັນພາສາລາວ",
+            content:
+              "ຊ່ວຍຂຽນເລື່ອງສັ້ນເປັນພາສາລາວກ່ຽວກັບ [ຫົວຂໍ້] ທີ່ມີຄວາມໝາຍເລິກຊຶ້ງແລະສະທ້ອນວັດທະນະທໍາລາວ",
+            rating: 4.7,
+            usage: 43,
+            author: "ນັກຂຽນ",
+          },
+          {
+            id: 8,
+            title: "ບົດກະວີລາວ",
+            category: "creative",
+            description: "ສ້າງບົດກະວີແບບລາວດັ້ງເດີມ",
+            content:
+              "ຊ່ວຍແຕ່ງບົດກະວີລາວແບບດັ້ງເດີມກ່ຽວກັບ [ຫົວຂໍ້] ດ້ວຍຄໍາສັບທີເໝາະສົມກັບວັດທະນະທໍາລາວ",
+            rating: 4.9,
+            usage: 67,
+            author: "ກະວີ",
+          },
+          {
+            id: 9,
+            title: "ສ້າງຕົວລະຄອນ",
+            category: "creative",
+            description: "ພັດທະນາຕົວລະຄອນສໍາລັດສໍາລັດສໍາລັດສໍາລັດສໍາລັດສໍາລັດສໍາລັດສໍາລັດ",
+            content:
+              "ຊ່ວຍສ້າງຕົວລະຄອນທີ່ມີມິຕິຊັບຊ້ອນສໍາລັດສໍາລັດສໍາລັດສໍາລັດສໍາລັດສໍາລັດ",
+            rating: 4.6,
+            usage: 52,
+            author: "ນັກຂຽນນິຍາຍ",
+          },
+
+          // Translation Category
+          {
+            id: 10,
+            title: "ການແປເອກະສານ",
+            category: "translation",
+            description: "ແມ່ແບບສໍາລັບການແປເອກະສານຈາກພາສາອື່ນເປັນພາສາລາວ",
+            content:
+              "ກະລຸນາແປເອກະສານນີ້ເປັນພາສາລາວໂດຍຮັກສາຄວາມໝາຍເດີມ ແລະ ໃຊ້ຄໍາສັບທີເໝາະສົມກັບວັດທະນະທໍາລາວ:",
+            rating: 4.9,
+            usage: 67,
+            author: "ນັກແປ",
+          },
+          {
+            id: 11,
+            title: "ແປສໍານວນ",
+            category: "translation",
+            description: "ແປສໍານວນແລະຄໍາເວົ້າມີຄວາມໝາຍ",
+            content:
+              "ຊ່ວຍແປສໍານວນ/ຄໍາເວົ້າ '[ຂໍ້ຄວາມ]' ຀ປັນພາສາລາວ ແລະ ອະທິບາຍຄວາມໝາຍເລິກຊຶ້ງ",
+            rating: 4.8,
+            usage: 89,
+            author: "ຜູ້ຊ່ຽວຊານພາສາ",
+          },
+          {
+            id: 12,
+            title: "ແປເນື້ອເພງ",
+            category: "translation",
+            description: "ແປເນື້ອເພງໃຫ້ມີຈັງຫວະ",
+            content:
+              "ແປເນື້ອເພງນີ້ເປັນພາສາລາວໂດຍຮັກສາຈັງຫວະ ແລະ ຄວາມໝາຍ ໃຫ້ຟັງແລ້ວໄພເລາະ:",
+            rating: 4.7,
+            usage: 45,
+            author: "ນັກແປເພງ",
+          },
+
+          // Coding Category
+          {
+            id: 13,
+            title: "ອະທິບາຍ Code",
+            category: "coding",
+            description: "ອະທິບາຍ code ໃຫ້ເຂົ້າໃຈງ່າຍ",
+            content:
+              "ກະລຸນາອະທິບາຍ code ນີ້ເປັນພາສາລາວວ່າມັນເຮັດຫຍັງ ແລະ ເຮັດວຽກແນວໃດ:",
+            rating: 4.8,
+            usage: 112,
+            author: "ນັກພັດທະນາ",
+          },
+          {
+            id: 14,
+            title: "ແກ້ບັນຫາ Bug",
+            category: "coding",
+            description: "ຊ່ວຍຊອກຫາແລະແກ້ໄຂບັນຫາໃນ code",
+            content:
+              "ຂໍໃຫ້ອະທິບາຍບັນຫາໃນ code ນີ້: [code] ຊ່ວຍຊອກຫາບັນຫາແລະແນະນໍາວິທີແກ້ໄຂ",
+            rating: 4.9,
+            usage: 156,
+            author: "Senior Developer",
+          },
+          {
+            id: 15,
+            title: "ສ້າງ Function",
+            category: "coding",
+            description: "ສ້າງ function ຕາມຄວາມຕ້ອງການ",
+            content:
+              "ຊ່ວຍຂຽນ function ໃນ [ພາສາ programming] ທີ່ [ຄໍາອະທິບາຍຄວາມຕ້ອງການ] ພ້ອມ comment ອະທິບາຍ",
+            rating: 4.7,
+            usage: 98,
+            author: "Code Mentor",
+          },
+
+          // Daily Life Category
+          {
+            id: 16,
+            title: "ແຜນອາຫານ",
+            category: "daily",
+            description: "ສ້າງແຜນອາຫານສຸຂະພາບດີ",
+            content:
+              "ຊ່ວຍສ້າງແຜນອາຫານ 7 ວັນທີ່ມີປະໂຫຍດຕໍ່ສຸຂະພາບ ໃຊ້ວັດຖຸດິບທີ່ຫາງ່າຍໃນລາວ",
+            rating: 4.6,
+            usage: 134,
+            author: "ນັກໂພຊະນາການ",
+          },
+          {
+            id: 17,
+            title: "ຄໍາແນະນໍາການເດີນທາງ",
+            category: "daily",
+            description: "ວາງແຜນການເດີນທາງໃນລາວ",
+            content:
+              "ຊ່ວຍວາງແຜນການເດີນທາງ [ຈໍານວນວັນ] ວັນໃນ [ສະຖານທີ່] ລວມທັງສະຖານທີ່ທ່ອງທ່ຽວ ອາຫານ ແລະ ທີ່ພັກ",
+            rating: 4.8,
+            usage: 167,
+            author: "ມັກຄະເທດ",
+          },
+          {
+            id: 18,
+            title: "ການຈັດການເວລາ",
+            category: "daily",
+            description: "ສ້າງຕາຕະລາງວຽກມີປະສິດທິພາບ",
+            content:
+              "ຊ່ວຍສ້າງຕາຕະລາງວຽກປະຈໍາວັນທີ່ມີປະສິດທິພາບສໍາລັດສໍາລັດສໍາລັດສໍາລັດສໍາລັດສໍາລັດສໍາລັດສໍາລັດສໍາລັດ",
+            rating: 4.7,
+            usage: 89,
+            author: "ຜູ້ຊ່ຽວຊານ",
+          },
+
+          // Health & Wellness Category
+          {
+            id: 19,
+            title: "ແຜນອອກກໍາລັງກາຍ",
+            category: "health",
+            description: "ສ້າງແຜນອອກກໍາລັງກາຍສ່ວນບຸກຄົນ",
+            content:
+              "ສ້າງແຜນອອກກໍາລັງກາຍ [ຈໍານວນ] ອາທິດສໍາລັບ [ເປົ້າໝາຍ] ທີ່ເໝາະກັບຄົນເລີ່ມຕົ້ນ",
+            rating: 4.8,
+            usage: 123,
+            author: "ຄູຝຶກ",
+          },
+          {
+            id: 20,
+            title: "ການຈັດການຄວາມເຄັ່ງຕຶງ",
+            category: "health",
+            description: "ເທັກນິກຜ່ອນຄາຍແລະສະມາທິ",
+            content:
+              "ແນະນໍາເທັກນິກການຜ່ອນຄາຍແລະຈັດການຄວາມເຄັ່ງຕຶງທີ່ເໝາະກັບວິຖີຊີວິດລາວ",
+            rating: 4.9,
+            usage: 145,
+            author: "ນັກຈິດຕະວິທະຍາ",
+          },
+
+          // Education Category
+          {
+            id: 21,
+            title: "ສ້າງແບບທົດສອບ",
+            category: "education",
+            description: "ສ້າງຄໍາຖາມທົດສອບຄວາມຮູ້",
+            content:
+              "ສ້າງແບບທົດສອບ [ຈໍານວນ] ຂໍ້ກ່ຽວກັບ [ຫົວຂໍ້] ແບບຫຼາກຫຼາຍຮູບແບບ ພ້ອມເຉລຍ",
+            rating: 4.7,
+            usage: 98,
+            author: "ຄູສອນ",
+          },
+          {
+            id: 22,
+            title: "ອະທິບາຍສໍາລັບເດັກ",
+            category: "education",
+            description: "ອະທິບາຍເລື່ອງຍາກໃຫ້ເດັກເຂົ້າໃຈ",
+            content:
+              "ອະທິບາຍ [ຫົວຂໍ້] ຃ອງເດັກອາຍຸ [ອາຍຸ] ປີເຂົ້າໃຈ ດ້ວຍຄໍາງ່າຍໆ ແລະຕົວຢ່າງທີ່ສົນໃຈ",
+            rating: 4.8,
+            usage: 156,
+            author: "ຄູອະນຸບານ",
+          },
+        ];
+
+
+
+
+
+
+
+
+
+        // Advanced Template Management System
+        class TemplateManager {
+          constructor() {
+            this.templates = [...communityTemplates];
+            this.favorites = JSON.parse(
+              localStorage.getItem("favoriteTemplates") || "[]"
+            );
+            this.userTemplates = JSON.parse(
+              localStorage.getItem("userTemplates") || "[]"
+            );
+            this.templateStats = JSON.parse(
+              localStorage.getItem("templateStats") || "{}"
+            );
+          }
+
+          addToFavorites(templateId) {
+            if (!this.favorites.includes(templateId)) {
+              this.favorites.push(templateId);
+              this.saveFavorites();
+              this.updateTemplateStats(templateId, "favorited");
+            }
+          }
+
+          removeFromFavorites(templateId) {
+            this.favorites = this.favorites.filter((id) => id !== templateId);
+            this.saveFavorites();
+          }
+
+          saveFavorites() {
+            localStorage.setItem(
+              "favoriteTemplates",
+              JSON.stringify(this.favorites)
+            );
+          }
+
+          createUserTemplate(template) {
+            const newTemplate = {
+              ...template,
+              id: Date.now(),
+              author: "ທ່ານ",
+              isUserTemplate: true,
+              createdAt: new Date().toISOString(),
+              rating: 0,
+              usage: 0,
+            };
+            this.userTemplates.push(newTemplate);
+            this.saveUserTemplates();
+            return newTemplate;
+          }
+
+          saveUserTemplates() {
+            localStorage.setItem(
+              "userTemplates",
+              JSON.stringify(this.userTemplates)
+            );
+          }
+
+          updateTemplateStats(templateId, action) {
+            if (!this.templateStats[templateId]) {
+              this.templateStats[templateId] = {
+                views: 0,
+                uses: 0,
+                favorites: 0,
+              };
+            }
+
+            switch (action) {
+              case "viewed":
+                this.templateStats[templateId].views++;
+                break;
+              case "used":
+                this.templateStats[templateId].uses++;
+                break;
+              case "favorited":
+                this.templateStats[templateId].favorites++;
+                break;
+            }
+
+            localStorage.setItem(
+              "templateStats",
+              JSON.stringify(this.templateStats)
+            );
+          }
+
+          getTemplateStats(templateId) {
+            return (
+              this.templateStats[templateId] || {
+                views: 0,
+                uses: 0,
+                favorites: 0,
+              }
+            );
+          }
+
+          getAllTemplates() {
+            return [...this.templates, ...this.userTemplates];
+          }
+
+          exportTemplates() {
+            const exportData = {
+              userTemplates: this.userTemplates,
+              favorites: this.favorites,
+              stats: this.templateStats,
+              exportDate: new Date().toISOString(),
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+              type: "application/json",
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `lao-chat-templates-${
+              new Date().toISOString().split("T")[0]
+            }.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }
+
+          importTemplates(file) {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                try {
+                  const data = JSON.parse(e.target.result);
+                  if (data.userTemplates) {
+                    this.userTemplates = [
+                      ...this.userTemplates,
+                      ...data.userTemplates,
+                    ];
+                    this.saveUserTemplates();
+                  }
+                  if (data.favorites) {
+                    this.favorites = [
+                      ...new Set([...this.favorites, ...data.favorites]),
+                    ];
+                    this.saveFavorites();
+                  }
+                  if (data.stats) {
+                    this.templateStats = data.stats;
+                    localStorage.setItem("templateStats", JSON.stringify(data.stats));
+                  }
+
+                  resolve(data);
+                } catch (error) {
+                  reject(error);
+                }
+              };
+              reader.readAsText(file);
+            });
+          }
+        }
+
+        // Initialize Template Manager
+        const templateManager = new TemplateManager();
+
+        // Enhanced Community Templates Modal with Advanced Features
+        function showCommunityTemplatesAdvanced() {
+          const modal = document.createElement("div");
+          modal.className = "modal";
+          modal.style.display = "flex";
+
+          const categoryIcons = {
+            learning: "📚",
+            business: "💼",
+            creative: "🎨",
+            translation: "🌐",
+            coding: "💻",
+            "daily-life": "🏠",
+            health: "🏥",
+            education: "🎓",
+            favorites: "⭐",
+            "my-templates": "👤",
+          };
+
+          modal.innerHTML = `
+            <div class="modal-content" style="max-width: 1000px; width: 95%; max-height: 90vh; overflow: hidden;">
+              <span class="close-btn">&times;</span>
+              <div class="template-modal-header">
+                <h2 style="margin-bottom: 20px; color: var(--text-color);">
+                  🌟 ແມ່ແບບຊຸມຊົນ - Community Templates
+                </h2>
+                
+                <!-- Advanced Controls -->
+                <div class="template-controls" style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+                  <div class="search-container" style="flex: 1; min-width: 250px;">
+                    <input type="text" id="template-search-advanced" placeholder="🔍 ຄົ້ນຫາແມ່ແບບ..." 
+                           style="width: 100%; padding: 10px 16px; border: 2px solid var(--border-color); border-radius: 25px; font-size: 14px;">
+                  </div>
+                  
+                  <select id="sort-templates" style="padding: 10px; border: 2px solid var(--border-color); border-radius: 8px;">
+                    <option value="newest">ໃໝ່ທີ່ສຸດ</option>
+                    <option value="popular">ນິຍົມທີ່ສຸດ</option>
+                    <option value="rating">ຄະແນນສູງສຸດ</option>
+                    <option value="alphabetical">ຕາມໂຕອັກສອນ</option>
+                  </select>
+                  
+                  <button id="create-template-btn" style="padding: 10px 16px; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                    ➕ ສ້າງແມ່ແບບ
+                  </button>
+                  
+                  <button id="import-templates-btn" style="padding: 10px 16px; background: var(--info-color); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                    📥 ນຳເຂົ້າ
+                  </button>
+                  
+                  <button id="export-templates-btn" style="padding: 10px 16px; background: var(--success-color); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                    📤 ສົ່ງອອກ
+                  </button>
+                </div>
+              </div>
+
+              <div class="template-modal-body" style="display: flex; height: calc(90vh - 200px);">
+                <!-- Sidebar Categories -->
+                <div class="template-sidebar" style="width: 200px; border-right: 1px solid var(--border-color); padding-right: 16px; overflow-y: auto;">
+                  <div class="template-categories">
+                    <div class="category-item active" data-category="all" style="padding: 12px; cursor: pointer; border-radius: 8px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                      🌟 ທັງໝົດ
+                    </div>
+                    <div class="category-item" data-category="favorites" style="padding: 12px; cursor: pointer; border-radius: 8px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                      ⭐ ລາຍການທີ່ຊອບ
+                    </div>
+                    <div class="category-item" data-category="my-templates" style="padding: 12px; cursor: pointer; border-radius: 8px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                      👤 ແມ່ແບບຂອງຂ້ອຍ
+                    </div>
+                    <hr style="margin: 12px 0; border: none; border-top: 1px solid var(--border-color);">
+                    ${Object.keys(categoryIcons)
+                      .filter(
+                        (cat) => !["favorites", "my-templates"].includes(cat)
+                      )
+                      .map(
+                        (category) => `
+                      <div class="category-item" data-category="${category}" style="padding: 12px; cursor: pointer; border-radius: 8px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                        ${categoryIcons[category]} ${getCategoryName(category)}
+                      </div>
+                    `
+                      )
+                      .join("")}
+                  </div>
+                </div>
+
+                <!-- Templates Grid -->
+                <div class="templates-content" style="flex: 1; padding-left: 16px; overflow-y: auto;">
+                  <div id="templates-grid-advanced" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+                    <!-- Templates will be populated here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+
+          document.body.appendChild(modal);
+
+          // Enhanced template rendering with stats and actions
+          function renderTemplatesAdvanced(templates, category = "all") {
+            const grid = document.getElementById("templates-grid-advanced");
+            const filteredTemplates = filterTemplatesByCategory(
+              templates,
+              category
+            );
+
+            grid.innerHTML = filteredTemplates
+              .map((template) => {
+                const stats = templateManager.getTemplateStats(template.id);
+                const isFavorite = templateManager.favorites.includes(
+                  template.id
+                );
+                const isUserTemplate = template.isUserTemplate;
+
+                return `
+                <div class="template-card-advanced" data-template-id="${
+                  template.id
+                }" 
+                     style="background: var(--bot-message-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s ease; position: relative;">
+                  
+                  <!-- Template Header -->
+                  <div class="template-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                    <div class="template-category-badge" style="background: var(--primary-color); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem;">
+                      ${
+                        categoryIcons[template.category] || "📝"
+                      } ${getCategoryName(template.category)}
+                    </div>
+                    
+                    <div class="template-actions" style="display: flex; gap: 4px;">
+                      <button class="favorite-btn ${
+                        isFavorite ? "active" : ""
+                      }" data-template-id="${template.id}" 
+                              style="background: none; border: none; cursor: pointer; font-size: 1.2rem; color: ${
+                                isFavorite ? "#f59e0b" : "#ccc"
+                              };">
+                        ${isFavorite ? "⭐" : "☆"}
+                      </button>
+                      ${
+                        isUserTemplate
+                          ? `
+                        <button class="edit-template-btn" data-template-id="${template.id}" 
+                                style="background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--text-secondary);">
+                          ✏️
+                        </button>
+                        <button class="delete-template-btn" data-template-id="${template.id}" 
+                                style="background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--error-color);">
+                          🗑️
+                        </button>
+                      `
+                          : ""
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Template Content -->
+                  <h4 style="font-size: 1rem; font-weight: 600; color: var(--text-color); margin-bottom: 8px;">
+                    ${template.title}
+                  </h4>
+                  
+                  <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    ${template.description}
+                  </p>
+
+                  <!-- Template Preview -->
+                  <div class="template-preview" style="background: var(--secondary-color); padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.8rem; color: var(--text-secondary); max-height: 60px; overflow: hidden;">
+                    ${template.content.substring(0, 100)}${
+                  template.content.length > 100 ? "..." : ""
+                }
+                  </div>
+
+                  <!-- Template Stats -->
+                  <div class="template-stats" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-secondary);">
+                    <div class="stats-left" style="display: flex; gap: 12px;">
+                      <span>👁️ ${stats.views}</span>
+                      <span>🔥 ${stats.uses}</span>
+                      <span>⭐ ${stats.favorites}</span>
+                    </div>
+                    
+                    <div class="stats-right" style="display: flex; align-items: center; gap: 8px;">
+                      <div class="rating" style="display: flex; align-items: center; gap: 2px;">
+                        ${"★".repeat(Math.floor(template.rating))}${"☆".repeat(
+                  5 - Math.floor(template.rating)
+                )}
+                        <span style="margin-left: 4px;">${
+                          template.rating
+                        }</span>
+                      </div>
+                      <span style="color: var(--text-secondary);">• ${
+                        template.author
+                      }</span>
+                    </div>
+                  </div>
+
+                  <!-- Hover Actions -->
+                  <div class="template-hover-actions" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0; transition: opacity 0.2s ease; background: rgba(0,0,0,0.8); color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem;">
+                    ຄລິກເພື່ອໃຊ້ງານ
+                  </div>
+                </div>
+              `;
+              })
+              .join("");
+
+            // Add hover effects
+           
+            document
+              .querySelectorAll(".template-card-advanced")
+              .forEach((card) => {
+                const hoverActions = card.querySelector(
+                  ".template-hover-actions"
+                );
+
+                card.addEventListener("mouseenter", () => {
+                  card.style.transform = "translateY(-4px)";
+                  card.style.boxShadow = "var(--shadow-medium)";
+                  hoverActions.style.opacity = "1";
+                });
+
+                card.addEventListener("mouseleave", () => {
+                  card.style.transform = "translateY(0)";
+                  card.style.boxShadow = "none";
+                  hoverActions.style.opacity = "0";
+                });
+              });
+          }
+
+          function filterTemplatesByCategory(templates, category) {
+            if (category === "all") return templates;
+            if (category === "favorites") {
+              return templates.filter((t) =>
+                templateManager.favorites.includes(t.id)
+              );
+            }
+            if (category === "my-templates") {
+              return templateManager.userTemplates;
+            }
+            return templates.filter((t) => t.category === category);
+          }
+
+          // Initial render
+          renderTemplatesAdvanced(templateManager.getAllTemplates());
+
+          // Category filtering
+          document.querySelectorAll(".category-item").forEach((item) => {
+            item.addEventListener("click", () => {
+              document
+                .querySelectorAll(".category-item")
+                .forEach((i) => i.classList.remove("active"));
+              item.classList.add("active");
+              item.style.background = "var(--primary-color)";
+              item.style.color = "white";
+
+              const category = item.dataset.category;
+              renderTemplatesAdvanced(
+                templateManager.getAllTemplates(),
+                category
+              );
+            });
+          });
+
+          // Search functionality
+          document
+            .getElementById("template-search-advanced")
+            .addEventListener("input", (e) => {
+              const searchTerm = e.target.value.toLowerCase();
+              const activeCategory = document.querySelector(
+                ".category-item.active"
+              ).dataset.category;
+              let templates = templateManager.getAllTemplates();
+
+              if (searchTerm) {
+                templates = templates.filter(
+                  (t) =>
+                    t.title.toLowerCase().includes(searchTerm) ||
+                    t.description.toLowerCase().includes(searchTerm) ||
+                    t.content.toLowerCase().includes(searchTerm)
+                );
+              }
+
+              renderTemplatesAdvanced(templates, activeCategory);
+            });
+
+          // Sort functionality
+          document
+            .getElementById("sort-templates")
+            .addEventListener("change", (e) => {
+              const sortBy = e.target.value;
+              let templates = [...templateManager.getAllTemplates()];
+
+              switch (sortBy) {
+                case "newest":
+                  templates.sort(
+                    (a, b) => (b.createdAt || b.id) - (a.createdAt || a.id)
+                  );
+                  break;
+                case "popular":
+                  templates.sort((a, b) => {
+                    const statsA = templateManager.getTemplateStats(a.id);
+                    const statsB = templateManager.getTemplateStats(b.id);
+                    return (
+                      statsB.uses +
+                      statsB.favorites -
+                      (statsA.uses + statsA.favorites)
+                    );
+                  });
+                  break;
+                case "rating":
+                  templates.sort((a, b) => b.rating - a.rating);
+                  break;
+                case "alphabetical":
+                  templates.sort((a, b) => a.title.localeCompare(b.title));
+                  break;
+              }
+
+              const activeCategory = document.querySelector(
+                ".category-item.active"
+              ).dataset.category;
+              renderTemplatesAdvanced(templates, activeCategory);
+            });
+
+          // Template actions
+          document.addEventListener("click", (e) => {
+            if (e.target.classList.contains("favorite-btn")) {
+              const templateId = parseInt(e.target.dataset.templateId);
+              const isFavorite = templateManager.favorites.includes(templateId);
+
+              if (isFavorite) {
+                templateManager.removeFromFavorites(templateId);
+                e.target.innerHTML = "☆";
+                e.target.style.color = "#ccc";
+              } else {
+                templateManager.addToFavorites(templateId);
+                e.target.innerHTML = "⭐";
+                e.target.style.color = "#f59e0b";
+              }
+            }
+
+            if (
+              e.target.classList.contains("template-card-advanced") ||
+              e.target.closest(".template-card-advanced")
+            ) {
+              const card = e.target.closest(".template-card-advanced");
+              const templateId = parseInt(card.dataset.templateId);
+              const template = templateManager
+                .getAllTemplates()
+                .find((t) => t.id === templateId);
+
+              if (template) {
+                templateManager.updateTemplateStats(templateId, "used");
+                document.getElementById("user-input").value = template.content;
+                modal.remove();
+                document.getElementById("user-input").focus();
+                showToast(`ໃຊ້ແມ່ແບບ: ${template.title}`);
+              }
+            }
+          });
+
+          // Create template functionality
+          document
+            .getElementById("create-template-btn")
+            .addEventListener("click", () => {
+              showCreateTemplateModal();
+            });
+
+          // Import/Export functionality
+          document
+            .getElementById("export-templates-btn")
+            .addEventListener("click", () => {
+              templateManager.exportTemplates();
+              showToast("ສົ່ງອອກແມ່ແບບສຳເລັດ!");
+            });
+
+          document
+            .getElementById("import-templates-btn")
+            .addEventListener("click", () => {
+              const input = document.createElement("input");
+              input.type = "file";
+              input.accept = ".json";
+              input.onchange = async (e) => {
+                try {
+                  await templateManager.importTemplates(e.target.files[0]);
+                  renderTemplatesAdvanced(templateManager.getAllTemplates());
+                  showToast("ນຳເຂົ້າແມ່ແບບສຳເລັດ!");
+                } catch (error) {
+                  showToast("ເກີດຂໍ້ຜິດພາດໃນການນຳເຂົ້າ!", "error");
+                }
+              };
+              input.click();
+            });
+
+          // Close modal
+          modal.querySelector(".close-btn").addEventListener("click", () => {
+            modal.remove();
+          });
+
+          modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+              modal.remove();
+            }
+          });
+        }
+
+        // Create Template Modal
+        function showCreateTemplateModal() {
+          const modal = document.createElement("div");
+          modal.className = "modal";
+          modal.style.display = "flex";
+
+          modal.innerHTML = `
+            <div class="modal-content" style="max-width: 600px; width: 90%;">
+              <span class="close-btn">&times;</span>
+              <h2 style="margin-bottom: 20px; color: var(--text-color);">✨ ສ້າງແມ່ແບບໃໝ່</h2>
+              
+              <form id="create-template-form">
+                <div style="margin-bottom: 16px;">
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color);">ຊື່ແມ່ແບບ:</label>
+                  <input type="text" id="template-title" required 
+                         style="width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 14px;"
+                         placeholder="ໃສ່ຊື່ແມ່ແບບ...">
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color);">ໝວດໝູ່:</label>
+                  <select id="template-category" required 
+                          style="width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    <option value="">ເລືອກໝວດໝູ່...</option>
+                    <option value="learning">📚 ການຮຽນຮູ້</option>
+                    <option value="business">💼 ທຸລະກິດ</option>
+                    <option value="creative">🎨 ສ້າງສັນ</option>
+                    <option value="translation">🌐 ແປພາສາ</option>
+                    <option value="coding">💻 ເຂົ້າລະຫັດ</option>
+                    <option value="daily-life">🏠 ຊີວິດປະຈໍາວັນ</option>
+                    <option value="health">🏥 ສຸຂະພາບ</option>
+                    <option value="education">🎓 ການສຶກສາ</option>
+                  </select>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color);">ຄຳອະທິບາຍ:</label>
+                  <textarea id="template-description" required rows="3"
+                            style="width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 14px; resize: vertical;"
+                            placeholder="ອະທິບາຍວ່າແມ່ແບບນີ້ໃຊ້ເພື່ອຫຍັງ..."></textarea>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color);">ເນື້ອຫາແມ່ແບບ:</label>
+                  <textarea id="template-content" required rows="6"
+                            style="width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 14px; resize: vertical;"
+                            placeholder="ໃສ່ເນື້ອຫາແມ່ແບບທີ່ຕ້ອງການ..."></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                  <button type="button" class="cancel-btn" 
+                          style="padding: 12px 24px; background: var(--secondary-color); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                    ຍົກເລີກ
+                  </button>
+                  <button type="submit" 
+                          style="padding: 12px 24px; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                    ສ້າງແມ່ແບບ
+                  </button>
+                </div>
+              </form>
+            </div>
+          `;
+
+          document.body.appendChild(modal);
+
+          // Form submission
+          document
+            .getElementById("create-template-form")
+            .addEventListener("submit", (e) => {
+              e.preventDefault();
+
+              const template = {
+                title: document.getElementById("template-title").value,
+                category: document.getElementById("template-category").value,
+                description: document.getElementById("template-description")
+                  .value,
+                content: document.getElementById("template-content").value,
+                rating: 5.0,
+              };
+
+              templateManager.createUserTemplate(template);
+              modal.remove();
+              showToast("ສ້າງແມ່ແບບສຳເລັດ!");
+            });
+
+          // Close modal
+          modal.querySelector(".close-btn").addEventListener("click", () => {
+            modal.remove();
+          });
+
+          modal.querySelector(".cancel-btn").addEventListener("click", () => {
+            modal.remove();
+          });
+
+          modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+              modal.remove();
+            }
+          });
+        }
+
+        // Template Analytics Dashboard
+        function showTemplateAnalytics() {
+          const modal = document.createElement("div");
+          modal.className = "modal";
+          modal.style.display = "flex";
+
+          const userTemplates = templateManager.userTemplates;
+          const totalStats = userTemplates.reduce(
+            (acc, template) => {
+              const stats = templateManager.getTemplateStats(template.id);
+              acc.totalViews += stats.views;
+              acc.totalUses += stats.uses;
+              acc.totalFavorites += stats.favorites;
+              return acc;
+            },
+            { totalViews: 0, totalUses: 0, totalFavorites: 0 }
+          );
+
+          modal.innerHTML = `
+            <div class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto;">
+              <span class="close-btn">&times;</span>
+              <h2 style="margin-bottom: 20px; color: var(--text-color); display: flex; align-items: center; gap: 12px;">
+                📊 ການວິເຄາະແມ່ແບບ - Template Analytics
+              </h2>
+              
+              <!-- Overview Stats -->
+              <div class="analytics-overview" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 30px;">
+                <div class="stat-card" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                  <div style="font-size: 2rem; font-weight: bold;">${
+                    userTemplates.length
+                  }</div>
+                  <div style="font-size: 0.9rem; opacity: 0.9;">ແມ່ແບບທັງໝົດ</div>
+                </div>
+                
+                <div class="stat-card" style="background: linear-gradient(135deg, var(--success-color), #16a34a); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                  <div style="font-size: 2rem; font-weight: bold;">${
+                    totalStats.totalUses
+                  }</div>
+                  <div style="font-size: 0.9rem; opacity: 0.9;">ການໃຊ້ງານ</div>
+                </div>
+                
+                <div class="stat-card" style="background: linear-gradient(135deg, var(--info-color), #2563eb); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                  <div style="font-size: 2rem; font-weight: bold;">${
+                    totalStats.totalViews
+                  }</div>
+                  <div style="font-size: 0.9rem; opacity: 0.9;">ການເບິ່ງ</div>
+                </div>
+                
+                <div class="stat-card" style="background: linear-gradient(135deg, var(--warning-color), #d97706); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                  <div style="font-size: 2rem; font-weight: bold;">${
+                    totalStats.totalFavorites
+                  }</div>
+                  <div style="font-size: 0.9rem; opacity: 0.9;">ລາຍການທີ່ຊອບ</div>
+                </div>
+              </div>
+
+              <!-- Template Performance Table -->
+              <div class="template-performance" style="background: var(--secondary-color); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 16px; color: var(--text-color);">🏆 ປະສິດທິພາບແມ່ແບບ</h3>
+                
+                <div class="performance-table" style="overflow-x: auto;">
+                  <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                      <tr style="background: var(--primary-color); color: white;">
+                        <th style="padding: 12px; text-align: left; border-radius: 8px 0 0 8px;">ແມ່ແບບ</th>
+                        <th style="padding: 12px; text-align: center;">ການເບິ່ງ</th>
+                        <th style="padding: 12px; text-align: center;">ການໃຊ້</th>
+                        <th style="padding: 12px; text-align: center;">ທີ໊ຊອບ</th>
+                        <th style="padding: 12px; text-align: center; border-radius: 0 8px 8px 0;">ຄະແນນ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${userTemplates
+                        .map((template, index) => {
+                          const stats = templateManager.getTemplateStats(
+                            template.id
+                          );
+                          const score =
+                            stats.uses * 3 + stats.favorites * 5 + stats.views;
+                          return `
+                          <tr style="border-bottom: 1px solid var(--border-color); ${
+                            index % 2 === 0
+                              ? "background: var(--background-color);"
+                              : ""
+                          }">
+                            <td style="padding: 12px;">
+                              <div style="font-weight: 600; color: var(--text-color);">${
+                                template.title
+                              }</div>
+                              <div style="font-size: 0.8rem; color: var(--text-secondary);">${
+                                template.category
+                              }</div>
+                            </td>
+                            <td style="padding: 12px; text-align: center; color: var(--text-color);">${
+                              stats.views
+                            }</td>
+                            <td style="padding: 12px; text-align: center; color: var(--text-color);">${
+                              stats.uses
+                            }</td>
+                            <td style="padding: 12px; text-align: center; color: var(--text-color);">${
+                              stats.favorites
+                            }</td>
+                            <td style="padding: 12px; text-align: center;">
+                              <span style="background: ${
+                                score > 50
+                                  ? "var(--success-color)"
+                                  : score > 20
+                                  ? "var(--warning-color)"
+                                  : "var(--error-color)"
+                              }; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">
+                                ${score}
+                              </span>
+                            </td>
+                          </tr>
+                        `;
+                        })
+                        .join("")}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Category Distribution -->
+              <div class="category-distribution" style="background: var(--secondary-color); border-radius: 12px; padding: 20px;">
+                <h3 style="margin-bottom: 16px; color: var(--text-color); display: flex; align-items: center; gap: 8px;">
+                  📈 ການແຈກຢາຍຕາມໝວດໝູ່
+                </h3>
+                
+                <div class="category-chart" style="display: flex; flex-direction: column; gap: 12px;">
+                  ${Object.entries(
+                    userTemplates.reduce((acc, template) => {
+                      acc[template.category] =
+                        (acc[template.category] || 0) + 1;
+                      return acc;
+                    }, {})
+                  )
+                    .map(([category, count]) => {
+                      const percentage = (count / userTemplates.length) * 100;
+                      return `
+                      <div class="category-bar" style="display: flex; align-items: center; gap: 12px;">
+                        <div style="min-width: 120px; font-size: 0.9rem; color: var(--text-color);">
+                          ${getCategoryName(category)}
+                        </div>
+                        <div style="flex: 1; background: var(--border-color); height: 20px; border-radius: 10px; overflow: hidden;">
+                          <div style="width: ${percentage}%; height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--primary-hover)); border-radius: 10px; transition: width 0.5s ease;"></div>
+                        </div>
+                        <div style="min-width: 60px; text-align: right; font-size: 0.9rem; color: var(--text-secondary);">
+                          ${count} (${percentage.toFixed(1)}%)
+                        </div>
+                      </div>
+                    `;
+                    })
+                    .join("")}
+                </div>
+              </div>
+            </div>
+          `;
+
+          document.body.appendChild(modal);
+
+          // Close modal
+          modal.querySelector(".close-btn").addEventListener("click", () => {
+            modal.remove();
+          });
+
+          modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+              modal.remove();
+            }
+          });
+        }
+
+        // Template Backup & Restore System
+        function showBackupRestore() {
+          const modal = document.createElement("div");
+          modal.className = "modal";
+          modal.style.display = "flex";
+
+          modal.innerHTML = `
+            <div class="modal-content" style="max-width: 600px; width: 90%;">
+              <span class="close-btn">&times;</span>
+              <h2 style="margin-bottom: 20px; color: var(--text-color); display: flex; align-items: center; gap: 12px;">
+                💾 ສຳຮອງ & ກູ້ຄືນ - Backup & Restore
+              </h2>
+              
+              <!-- Backup Section -->
+              <div class="backup-section" style="background: var(--secondary-color); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 16px; color: var(--text-color); display: flex; align-items: center; gap: 8px;">
+                  📤 ສຳຮອງຂໍ້ມູນ
+                </h3>
+                
+                <p style="color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">
+                  ສຳຮອງແມ່ແບບ, ລາຍການທີ່ຊອບ, ແລະສະຖິຕິການໃຊ້ງານຂອງທ່ານ
+                </p>
+                
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                  <button id="backup-all" style="padding: 12px 20px; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    💾 ສຳຮອງທັງໝົດ
+                  </button>
+                  
+                  <button id="backup-templates-only" style="padding: 12px 20px; background: var(--info-color); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    📝 ແມ່ແບບເທົ່ານັ້ນ
+                  </button>
+                  
+                  <button id="backup-favorites-only" style="padding: 12px 20px; background: var(--warning-color); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    ⭐ ລາຍການທີ່ຊອບ
+                  </button>
+                </div>
+              </div>
+
+              <!-- Restore Section -->
+              <div class="restore-section" style="background: var(--secondary-color); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 16px; color: var(--text-color); display: flex; align-items: center; gap: 8px;">
+                  📥 ກູ້ຄືນຂໍ້ມູນ
+                </h3>
+                
+                <p style="color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">
+                  ກູ້ຄືນຂໍ້ມູນຈາກໄຟລ์ສຳຮອງ (.json)
+                </p>
+                
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                  <button id="restore-data" style="padding: 12px 20px; background: var(--success-color); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    📥 ກູ້ຄືນຂໍ້ມູນ
+                  </button>
+                  
+                  <button id="reset-all" style="padding: 12px 20px; background: var(--error-color); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    🗑️ ລຶບທັງໝົດ
+                  </button>
+                </div>
+              </div>
+
+              <!-- Auto Backup Settings -->
+              <div class="auto-backup-section" style="background: var(--secondary-color); border-radius: 12px; padding: 20px;">
+                <h3 style="margin-bottom: 16px; color: var(--text-color); display: flex; align-items: center; gap: 8px;">
+                  ⚙️ ການຕັ້ງຄ່າສຳຮອງອັດຕະໂນມັດ
+                </h3>
+                
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                  <input type="checkbox" id="auto-backup-enabled" style="width: 18px; height: 18px;">
+                  <label for="auto-backup-enabled" style="color: var(--text-color); cursor: pointer;">
+                    ເປີດໃຊ້ການສຳຮອງອັດຕະໂນມັດ
+                  </label>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <label style="color: var(--text-color);">ສຳຮອງທຸກໆ:</label>
+                  <select id="backup-interval" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--background-color); color: var(--text-color);">
+                    <option value="daily">ທຸກມື້</option>
+                    <option value="weekly">ທຸກອາທິດ</option>
+                    <option value="monthly">ທຸກເດືອນ</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          `;
+
+          document.body.appendChild(modal);
+
+          // Backup functionality
+          document
+            .getElementById("backup-all")
+            .addEventListener("click", () => {
+              const backupData = {
+                userTemplates: templateManager.userTemplates,
+                favorites: templateManager.favorites,
+                stats: templateManager.templateStats,
+                chatHistories: chatHistories,
+                settings: { theme: currentTheme },
+                backupDate: new Date().toISOString(),
+                version: "1.0",
+              };
+
+              downloadBackup(backupData, "complete-backup");
+              showToast("ສຳຮອງຂໍ້ມູນທັງໝົດສຳເລັດ!");
+            });
+
+          document
+            .getElementById("backup-templates-only")
+            .addEventListener("click", () => {
+              const backupData = {
+                userTemplates: templateManager.userTemplates,
+                backupDate: new Date().toISOString(),
+                type: "templates-only",
+              };
+
+              downloadBackup(backupData, "templates-backup");
+              showToast("ສຳຮອງແມ່ແບບສຳເລັດ!");
+            });
+
+          document
+            .getElementById("backup-favorites-only")
+            .addEventListener("click", () => {
+              const backupData = {
+                favorites: templateManager.favorites,
+                backupDate: new Date().toISOString(),
+                type: "favorites-only",
+              };
+
+              downloadBackup(backupData, "favorites-backup");
+              showToast("ສຳຮອງລາຍການທີ່ຊອບສຳເລັດ!");
+            });
+
+          // Restore functionality
+          document
+            .getElementById("restore-data")
+            .addEventListener("click", () => {
+              const input = document.createElement("input");
+              input.type = "file";
+              input.accept = ".json";
+              input.onchange = async (e) => {
+                try {
+                  const file = e.target.files[0];
+                  const reader = new FileReader();
+                  reader.onload = (e) => {
+                    try {
+                      const data = JSON.parse(e.target.result);
+                      restoreData(data);
+                      modal.remove();
+                      showToast("ກູ້ຄືນຂໍ້ມູນສຳເລັດ!");
+                    } catch (error) {
+                      showToast("ໄຟລ์ບໍ່ຖືກຕ້ອງ!", "error");
+                    }
+                  };
+                  reader.readAsText(file);
+                } catch (error) {
+                  showToast("ເກີດຂໍ້ຜິດພາດໃນການກູ້ຄືນ!", "error");
+                }
+              };
+              input.click();
+            });
+
+          document.getElementById("reset-all").addEventListener("click", () => {
+            if (
+              confirm(
+                "ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລຶບຂໍ້ມູນທັງໝົດ? ການກະທຳນີ້ບໍ່ສາມາດຍົກເລີກໄດ້!"
+              )
+            ) {
+              localStorage.removeItem("userTemplates");
+              localStorage.removeItem("favoriteTemplates");
+              localStorage.removeItem("templateStats");
+              localStorage.removeItem("chatHistories");
+
+              templateManager.userTemplates = [];
+              templateManager.favorites = [];
+              templateManager.templateStats = {};
+
+              modal.remove();
+              showToast("ລຶບຂໍ້ມູນທັງໝົດສຳເລັດ!");
+            }
+          });
+
+          function downloadBackup(data, type) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], {
+              type: "application/json",
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `lao-chat-${type}-${
+              new Date().toISOString().split("T")[0]
+            }.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }
+
+          function restoreData(data) {
+            if (data.userTemplates) {
+              templateManager.userTemplates = data.userTemplates;
+              templateManager.saveUserTemplates();
+            }
+
+            if (data.favorites) {
+              templateManager.favorites = data.favorites;
+              templateManager.saveFavorites();
+            }
+
+            if (data.stats) {
+              templateManager.templateStats = data.stats;
+              localStorage.setItem("templateStats", JSON.stringify(data.stats));
+            }
+
+            if (data.chatHistories) {
+              Object.assign(chatHistories, data.chatHistories);
+              saveChatHistories();
+            }
+
+            if (data.settings && data.settings.theme) {
+              setTheme(data.settings.theme);
+            }
+          }
+
+          // Close modal
+          modal.querySelector(".close-btn").addEventListener("click", () => {
+            modal.remove();
+          });
+
+          modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+              modal.remove();
+            }
+          });
+        }
+
+
+
+        // Check for shared template in URL
+        function checkForSharedTemplate() {
+          const urlParams = new URLSearchParams(window.location.search);
+          const templateData = urlParams.get("template");
+
+          if (templateData) {
+            try {
+              const template = JSON.parse(atob(templateData));
+
+              if (confirm(`ທ່ານຕ້ອງການນຳເຂົ້າແມ່ແບບ "${template.title}" ບໍ?`)) {
+                templateManager.createUserTemplate(template);
+                showToast(`ນຳເຂົ້າແມ່ແບບ "${template.title}" ສຳເລັດ!`);
+
+                // Clear URL parameter
+                window.history.replaceState(
+                  {},
+                  document.title,
+                  window.location.pathname
+                );
+              }
+            } catch (error) {
+              console.error("Invalid template data in URL");
+            }
+          }
+        }
+
+        // Enhanced Toast System
+        function showToast(message, type = "success", duration = 3000) {
+          const toast = document.createElement("div");
+          toast.className = "toast";
+
+          const icons = {
+            success: "✅",
+            error: "❌",
+            warning: "⚠️",
+            info: "ℹ️",
+          };
+
+          const colors = {
+            success: "var(--success-color)",
+            error: "var(--error-color)",
+            warning: "var(--warning-color)",
+            info: "var(--info-color)",
+          };
+
+          toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${colors[type]};
+            color: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            max-width: 400px;
+            animation: toastSlideIn 0.3s ease;
+            backdrop-filter: blur(10px);
+          `;
+
+          toast.innerHTML = `
+            <span style="font-size: 1.2rem;">${icons[type]}</span>
+            <span>${message}</span>
+            <button onclick="this.parentElement.remove()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem; margin-left: auto;">×</button>
+          `;
+
+          document.body.appendChild(toast);
+
+          setTimeout(() => {
+            toast.style.animation = "slideOut 0.3s ease";
+            setTimeout(() => toast.remove(), 300);
+          }, duration);
+        }
+
+        // Add toast animations to CSS
+        const toastStyles = document.createElement("style");
+        toastStyles.textContent = `
+          @keyframes toastSlideIn {
+            from {
+              transform: translateX(100%);
+              opacity: 0;
+            }
+            to {
+              transform: translateX(0);
+              opacity: 1;
+            }
+          }
+
+          @keyframes toastSlideOut {
+            from {
+              transform: translateX(0);
+              opacity: 1;
+            }
+            to {
+              transform: translateX(100%);
+              opacity: 0;
+            }
+          }
+        `;
+        document.head.appendChild(toastStyles);
+
+
+
+        // Check for shared template on load
+        checkForSharedTemplate();
+
+        // Initialize everything
+        initializeLaoLanguage();
+        setTheme(currentTheme);
+        updateConnectionStatus("online");
+        loadChatHistories();
+
+        // Initialize virtual scrolling if chat history is large
+        if (Object.keys(chatHistories).length > 50) {
+          virtualList = new VirtualChatList(chatContainer);
+        }
+      });
+    </script>
+  </body>
+</html>
