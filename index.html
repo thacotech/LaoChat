@@ -2790,7 +2790,7 @@
         document
           .getElementById("create-share-link")
           .addEventListener("click", () => {
-            const shareUrl = `${window.location.origin}/shared/${currentChatId}`;
+            const shareUrl = `${window.location.origin}/LaoChat/shared/${currentChatId}`;
             navigator.clipboard.writeText(shareUrl).then(() => {
               showToast("ລິ້ງຖືກສຳເນົາແລ້ວ!");
             });
