@@ -2794,6 +2794,42 @@
             navigator.clipboard.writeText(shareUrl).then(() => {
               showToast("ລິ້ງຖືກສຳເນົາແລ້ວ!");
             });
+            }
+
+            // Lưu dữ liệu cuộc trò chuyện để chia sẻ
+            try {
+              const sharedChatsKey = 'sharedChats';
+              let sharedChats = {};
+              
+              // Lấy dữ liệu chia sẻ hiện có (nếu có)
+              const existingSharedChats = localStorage.getItem(sharedChatsKey);
+              if (existingSharedChats) {
+                sharedChats = JSON.parse(existingSharedChats);
+              }
+
+              // Thêm cuộc trò chuyện hiện tại vào danh sách chia sẻ
+              sharedChats[currentChatId] = {
+                messages: chatHistories[currentChatId],
+                sharedAt: new Date().toISOString(),
+                title: `Cuộc trò chuyện ${new Date().toLocaleDateString('vi-VN')}`
+              };
+
+              // Lưu vào localStorage
+              localStorage.setItem(sharedChatsKey, JSON.stringify(sharedChats));
+
+              // Tạo URL chia sẻ - sử dụng URL parameters để tương thích với GitHub Pages
+              const baseUrl = window.location.href.replace(/\/[^\/]*$/, '');
+              const shareUrl = `${baseUrl}/shared/?id=${currentChatId}`;
+              
+              navigator.clipboard.writeText(shareUrl).then(() => {
+                showToast("ລິ້ງຖືກສຳເນົາແລ້ວ! ໃຫ້ແບ່ງປັນໄດ້ແລ້ວ! 🎉");
+                shareModal.style.display = "none";
+              }).catch(() => {
+                // Fallback nếu clipboard API không hoạt động
+                prompt("ສຳເນົາລິ້ງນີ້:", shareUrl);
+                showToast("ກະລຸນາສຳເນົາລິ້ງດ້ວຍຕົນເອງ");
+                shareModal.style.display = "none";
+              });
           });
 
 

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ການສົນທະນາທີ່ຖືກແບ່ງປັນ - Lao Chat</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+        
+        @font-face {
+            font-family: 'Phetsarath OT';
+            src: url('../front/Phetsarath OT.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        :root {
+            --primary-color: #10a37f;
+            --background-color: #ffffff;
+            --text-color: #0d0d0d;
+            --text-secondary: #676767;
+            --border-color: #e5e5e5;
+            --user-message-bg: #10a37f;
+            --bot-message-bg: #f7f7f8;
+            --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --radius-md: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, 'Phetsarath OT', 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-light);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .message.user .icon {
+            background: var(--user-message-bg);
+            color: white;
+        }
+
+        .message.assistant .icon {
+            background: var(--bot-message-bg);
+            color: var(--text-color);
+        }
+
+        .message .content {
+            background: var(--bot-message-bg);
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .message.user .content {
+            background: var(--user-message-bg);
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗨️ ການສົນທະນາທີ່ຖືກແບ່ງປັນ</h1>
+            <p>ຖືກແບ່ງປັນຈາກ Lao Chat</p>
+        </div>
+
+        <div id="chat-content">
+            <div class="loading">
+                <p>📡 ກຳລັງໂຫຼດການສົນທະນາ...</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>
+                ສ້າງໂດຍ <a href="../">Lao Chat</a> - 
+                ເຄື່ອງມື AI ສໍາລັບການສົນທະນາພາສາລາວ
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Lấy chat ID từ URL hoặc URL parameters
+        function getChatIdFromUrl() {
+            // Thử lấy từ path trước
+            const pathParts = window.location.pathname.split('/');
+            const chatIndex = pathParts.indexOf('shared');
+            if (chatIndex !== -1 && pathParts[chatIndex + 1]) {
+                return pathParts[chatIndex + 1];
+            }
+            
+            // Nếu không có trong path, thử lấy từ URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        // Hiển thị cuộc trò chuyện
+        function displaySharedChat(chatData) {
+            const chatContent = document.getElementById('chat-content');
+            
+            if (!chatData || !chatData.messages || chatData.messages.length === 0) {
+                chatContent.innerHTML = `
+                    <div class="error-message">
+                        ❌ ບໍ່ພົບການສົນທະນານີ້ ຫຼື ການສົນທະນາໄດ້ຖືກລຶບໄປແລ້ວ.
+                    </div>
+                `;
+                return;
+            }
+
+            const chatContainer = document.createElement('div');
+            chatContainer.className = 'chat-container';
+
+            chatData.messages.forEach(message => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${message.sender}`;
+
+                const icon = document.createElement('div');
+                icon.className = 'icon';
+                icon.textContent = message.sender === 'user' ? '👤' : '🤖';
+
+                const content = document.createElement('div');
+                content.className = 'content';
+                content.innerHTML = message.content || message.message || '';
+
+                messageDiv.appendChild(icon);
+                messageDiv.appendChild(content);
+                chatContainer.appendChild(messageDiv);
+            });
+
+            chatContent.innerHTML = '';
+            chatContent.appendChild(chatContainer);
+        }
+
+        // Hiển thị lỗi
+        function showError(message) {
+            const chatContent = document.getElementById('chat-content');
+            chatContent.innerHTML = `
+                <div class="error-message">
+                    ❌ ${message}
+                </div>
+            `;
+        }
+
+        // Khởi tạo
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatId = getChatIdFromUrl();
+            
+            if (!chatId) {
+                showError('ບໍ່ພົບ ID ຂອງການສົນທະນາໃນ URL. ກະລຸນາກວດສອບລິ້ງອີກຄັ້ງ.');
+                return;
+            }
+
+            console.log('ກຳລັງຊອກຫາການສົນທະນາດ້ວຍ ID:', chatId);
+
+            // Thử lấy dữ liệu từ localStorage (nếu có)
+            try {
+                const sharedChatsData = localStorage.getItem('sharedChats');
+                if (sharedChatsData) {
+                    const sharedChats = JSON.parse(sharedChatsData);
+                    if (sharedChats[chatId]) {
+                        console.log('ພົບການສົນທະນາ:', sharedChats[chatId]);
+                        displaySharedChat(sharedChats[chatId]);
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error('ຂໍ້ຜິດພາດໃນການອ່ານ localStorage:', error);
+            }
+
+            // Nếu không tìm thấy trong localStorage, hiển thị hướng dẫn
+            const chatContent = document.getElementById('chat-content');
+            chatContent.innerHTML = `
+                <div class="error-message">
+                    <h3>🔍 ບໍ່ພົບການສົນທະນາ</h3>
+                    <p>ການສົນທະນາດ້ວຍ ID <strong>${chatId}</strong> ບໍ່ມີຢູ່ ຫຼື ຍັງບໍ່ໄດ້ຖືກແບ່ງປັນ.</p>
+                    <br>
+                    <p><strong>ໝາຍເຫດ:</strong> ທ່ານຕ້ອງເຂົ້າເຖິງລິ້ງນີ້ຢູ່ໃນເວັບບຣາວເຊີ ແລະ ອຸປະກອນດຽວກັນກັບທີ່ສ້າງການສົນທະນາ.</p>
+                    <br>
+                    <p><a href="../">← ກັບຄືນສູ່ Lao Chat</a></p>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>
