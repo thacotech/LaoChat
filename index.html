@@ -2790,12 +2790,6 @@
         document
           .getElementById("create-share-link")
           .addEventListener("click", () => {
-            const shareUrl = `${window.location.origin}/shared/${currentChatId}`;
-            navigator.clipboard.writeText(shareUrl).then(() => {
-              showToast("ລິ້ງຖືກສຳເນົາແລ້ວ!");
-            });
-          });
-
             // Lưu dữ liệu cuộc trò chuyện để chia sẻ
             try {
               const sharedChatsKey = 'sharedChats';
@@ -2830,6 +2824,10 @@
                 showToast("ກະລຸນາສຳເນົາລິ້ງດ້ວຍຕົນເອງ");
                 shareModal.style.display = "none";
               });
+            } catch (error) {
+              console.error('Lỗi khi chia sẻ:', error);
+              showToast("ເກີດຂໍ້ຜິດພາດໃນການແບ່ງປັນ!", "error");
+            }
           });
 
 
