@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lao Chat - Optimized</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .chat-container {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            max-height: calc(100vh - 140px);
+        }
+        
+        .message {
+            margin: 1rem 0;
+            padding: 0.8rem;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        
+        .user {
+            background: #3498db;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .bot {
+            background: white;
+            border: 1px solid #ddd;
+        }
+        
+        .input-area {
+            padding: 1rem;
+            background: white;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        #userInput {
+            flex: 1;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        #sendBtn {
+            padding: 0.8rem 1.5rem;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        #sendBtn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .error-message {
+            background: #e74c3c;
+            color: white;
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+        }
+        
+        .quota-warning {
+            background: #f39c12;
+            color: white;
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+        }
+        
+        .loading {
+            opacity: 0.7;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-width: 80%;
+            margin: 1rem 0;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 0.2rem;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #3498db;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        .cache-info {
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+            padding: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Lao Chat - Optimized</h1>
+        <div class="cache-info">Cache: <span id="cacheCount">0</span> responses | Quota: <span id="quotaCount">0</span>/200</div>
+    </div>
+    
+    <div class="chat-container" id="chatContainer">
+        <div class="message bot">
+            <strong>ສະບາຍດີ!</strong> ຂ້ອຍແມ່ນ AI ຊ່ວຍເຫຼືອທີ່ໄດ້ຮັບການປັບປຸງເພື່ອປະຫຍັດ quota. ຂ້ອຍຈະ cache ຄຳຕອບເພື່ອຫຼຸດຜ່ອນການໃຊ້ API.
+        </div>
+    </div>
+    
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="ພິມຂໍ້ຄວາມຂອງທ່ານ..." />
+        <button id="sendBtn">ສົ່ງ</button>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            API_KEY: "AIzaSyATpK0slBci4ykBJaVSjcTRQA9JeHMTw38", // ໃຊ້ API key ຂອງທ່ານ
+            API_URL: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+            MAX_RETRIES: 3,
+            RETRY_DELAY: 1000, // 1 second
+            CACHE_EXPIRY: 3600000, // 1 hour in milliseconds
+            DEBOUNCE_DELAY: 500 // Prevent rapid requests
+        };
+
+        // State management
+        let isGenerating = false;
+        let requestCount = 0;
+        let lastRequestTime = 0;
+        let abortController = null;
+
+        // Cache system
+        class ResponseCache {
+            constructor() {
+                this.cache = new Map();
+                this.loadFromStorage();
+            }
+
+            generateKey(message) {
+                return btoa(message.toLowerCase().trim()).slice(0, 20);
+            }
+
+            set(message, response) {
+                const key = this.generateKey(message);
+                const data = {
+                    response,
+                    timestamp: Date.now(),
+                    count: (this.cache.get(key)?.count || 0) + 1
+                };
+                this.cache.set(key, data);
+                this.saveToStorage();
+                this.updateCacheUI();
+            }
+
+            get(message) {
+                const key = this.generateKey(message);
+                const data = this.cache.get(key);
+                
+                if (!data) return null;
+                
+                // Check if cache is expired
+                if (Date.now() - data.timestamp > CONFIG.CACHE_EXPIRY) {
+                    this.cache.delete(key);
+                    this.saveToStorage();
+                    return null;
+                }
+                
+                return data.response;
+            }
+
+            saveToStorage() {
+                try {
+                    const cacheData = Array.from(this.cache.entries());
+                    localStorage.setItem('gemini_cache', JSON.stringify(cacheData));
+                } catch (e) {
+                    console.warn('Cannot save cache to localStorage:', e);
+                }
+            }
+
+            loadFromStorage() {
+                try {
+                    const stored = localStorage.getItem('gemini_cache');
+                    if (stored) {
+                        const cacheData = JSON.parse(stored);
+                        this.cache = new Map(cacheData);
+                        this.updateCacheUI();
+                    }
+                } catch (e) {
+                    console.warn('Cannot load cache from localStorage:', e);
+                }
+            }
+
+            updateCacheUI() {
+                document.getElementById('cacheCount').textContent = this.cache.size;
+            }
+
+            clear() {
+                this.cache.clear();
+                this.saveToStorage();
+                this.updateCacheUI();
+            }
+        }
+
+        // Initialize cache
+        const responseCache = new ResponseCache();
+
+        // Rate limiting
+        function canMakeRequest() {
+            const now = Date.now();
+            if (now - lastRequestTime < CONFIG.DEBOUNCE_DELAY) {
+                return false;
+            }
+            lastRequestTime = now;
+            return true;
+        }
+
+        // Update quota counter
+        function updateQuotaCounter() {
+            const stored = localStorage.getItem('api_request_count') || '0';
+            requestCount = parseInt(stored);
+            document.getElementById('quotaCount').textContent = requestCount;
+        }
+
+        function incrementQuotaCounter() {
+            requestCount++;
+            localStorage.setItem('api_request_count', requestCount.toString());
+            updateQuotaCounter();
+        }
+
+        // API call with retry logic
+        async function callGeminiAPI(message, retryCount = 0) {
+            try {
+                if (abortController) {
+                    abortController.abort();
+                }
+                abortController = new AbortController();
+
+                const response = await fetch(`${CONFIG.API_URL}?key=${CONFIG.API_KEY}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: message
+                            }]
+                        }]
+                    }),
+                    signal: abortController.signal
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    const errorMessage = errorData.error?.message || 'Unknown error';
+                    
+                    // Handle quota exceeded error
+                    if (errorMessage.includes('quota') || errorMessage.includes('limit')) {
+                        throw new Error(`QUOTA_EXCEEDED: ${errorMessage}`);
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+
+                incrementQuotaCounter();
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    throw error;
+                }
+
+                // Retry logic for non-quota errors
+                if (retryCount < CONFIG.MAX_RETRIES && !error.message.includes('QUOTA_EXCEEDED')) {
+                    console.log(`Retry ${retryCount + 1}/${CONFIG.MAX_RETRIES} after ${CONFIG.RETRY_DELAY}ms`);
+                    await new Promise(resolve => setTimeout(resolve, CONFIG.RETRY_DELAY));
+                    return callGeminiAPI(message, retryCount + 1);
+                }
+
+                throw error;
+            }
+        }
+
+        // Add message to chat
+        function addMessage(message, sender, isError = false) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            if (isError) {
+                messageDiv.className += ' error-message';
+            }
+            
+            messageDiv.innerHTML = message.replace(/\n/g, '<br>');
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            const chatContainer = document.getElementById('chatContainer');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <span>AI ກຳລັງພິມ...</span>
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // Handle quota exceeded error
+        function handleQuotaError(error) {
+            const quotaDiv = document.createElement('div');
+            quotaDiv.className = 'quota-warning';
+            quotaDiv.innerHTML = `
+                <strong>⚠️ Quota Exceeded</strong><br>
+                ${error.message}<br>
+                <small>ລອງໃໝ່ໃນອີກ 1 ນາທີ ຫຼື ນຳໃຊ້ cache responses</small>
+            `;
+            document.getElementById('chatContainer').appendChild(quotaDiv);
+        }
+
+        // Send message
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const message = userInput.value.trim();
+
+            if (!message || isGenerating) return;
+
+            if (!canMakeRequest()) {
+                addMessage('ກະລຸນາລໍຖ້າ ກ່ອນສົ່ງຂໍ້ຄວາມໃໝ່...', 'bot', true);
+                return;
+            }
+
+            // Check cache first
+            const cachedResponse = responseCache.get(message);
+            if (cachedResponse) {
+                addMessage(message, 'user');
+                addMessage(`📋 ${cachedResponse} (from cache)`, 'bot');
+                userInput.value = '';
+                return;
+            }
+
+            // Check quota warning
+            if (requestCount >= 180) {
+                addMessage('⚠️ ໃກ້ຮອດ quota limit (180/200). ແນະນຳໃຫ້ໃຊ້ cache responses.', 'bot', true);
+            }
+
+            isGenerating = true;
+            sendBtn.disabled = true;
+            sendBtn.classList.add('loading');
+            
+            addMessage(message, 'user');
+            showTypingIndicator();
+            userInput.value = '';
+
+            try {
+                const response = await callGeminiAPI(message);
+                removeTypingIndicator();
+                
+                // Cache the response
+                responseCache.set(message, response);
+                addMessage(response, 'bot');
+                
+            } catch (error) {
+                removeTypingIndicator();
+                
+                if (error.message.includes('QUOTA_EXCEEDED')) {
+                    handleQuotaError(error);
+                } else if (error.name !== 'AbortError') {
+                    addMessage(`❌ ເກີດຂໍ້ຜິດພາດ: ${error.message}`, 'bot', true);
+                }
+            } finally {
+                isGenerating = false;
+                sendBtn.disabled = false;
+                sendBtn.classList.remove('loading');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Initialize
+        updateQuotaCounter();
+        responseCache.updateCacheUI();
+
+        // Clear cache button (for testing)
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Delete') {
+                responseCache.clear();
+                localStorage.removeItem('api_request_count');
+                updateQuotaCounter();
+                addMessage('🗑️ Cache ແລະ quota counter ຖືກລຶບແລ້ວ', 'bot');
+            }
+        });
+    </script>
+</body>
+</html>
